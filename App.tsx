@@ -1,0 +1,13 @@
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+
+import Navigation from "./components/roastNavigation";
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <StatusBar style="light" />
+      <Navigation />
+    </SafeAreaProvider>
+  );
+}
