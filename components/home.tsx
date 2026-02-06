@@ -4,10 +4,8 @@ import { useNavigation } from "@react-navigation/native";
 
 import { CardButton } from "./cardButton";
 import { RootStackParamList } from "../types";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-
-// "Home" entrega contexto.
-type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
+import { HomeNavigationProp } from "../types";
+import { ProductProvider } from "./productContext";
 
 type OptionItem = {
   id: string;

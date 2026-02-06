@@ -1,10 +1,16 @@
-import { Text, View, Pressable, StyleSheet } from "react-native";
+import { Button, View, FlatList, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 
-import { CustomCamera } from "./camera.android";
+import { Product } from "../domain/product";
+import { CardButton } from "./cardButton";
+import { HomeNavigationProp } from "../types";
+import { useProducts } from "./productContext";
 
 export function Inventory() {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<HomeNavigationProp>();
+  const { products } = useProducts();
 
   return (
     <View
@@ -15,47 +21,33 @@ export function Inventory() {
         paddingTop: insets.top,
       }}
     >
-      <CustomCamera />
-      <View style={styles.overlay}>
-        <Text style={styles.text}>Escanear código QR</Text>
-        <View style={styles.scanArea} />
-        <Pressable style={styles.button}>
-          <Text style={styles.buttonText}>Confirmar</Text>
-        </Pressable>
-      </View>
+      <Button title="Cambiar inventario" onPress={() => {}}></Button>
+      <Button title="Agregar inventario" onPress={() => {}}></Button>
+      <Button
+        title="Agregar producto"
+        onPress={() => {
+          navigation.navigate("AddProduct");
+        }}
+      ></Button>
+      <FlatList
+        style={styles.flatlistOptions}
+        data={products}
+        keyExtractor={(item) => (item.sku != null ? item.sku : item.name)}
+        numColumns={4}
+        renderItem={({ item }) => (
+          <CardButton
+            title={item.name}
+            imageSource={require("../assets/favicon.png")}
+            onPress={() => {}}
+          />
+        )}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "space-between",
-    padding: 24,
-  },
-  text: {
-    color: "white",
-    fontSize: 18,
-    textAlign: "center",
-    marginTop: 40,
-  },
-  button: {
-    backgroundColor: "rgba(0,0,0,0.6)",
-    padding: 16,
-    borderRadius: 8,
-    alignSelf: "center",
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-  },
-  scanArea: {
-    width: 250,
-    height: 250,
-    borderWidth: 2,
-    borderColor: "white",
-    alignSelf: "center",
-    marginTop: "30%",
-    borderRadius: 12,
+  flatlistOptions: {
+    paddingHorizontal: 12,
   },
 });
