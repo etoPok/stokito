@@ -6,7 +6,8 @@ export type RootStackParamList = {
   Inventory: undefined;
   Refund: undefined;
   Checkout: undefined;
-  AddProduct: undefined;
+  AddProductToInventory: undefined;
+  AddProductDefinition: undefined;
   AddInventory: undefined;
   Products: undefined;
 };

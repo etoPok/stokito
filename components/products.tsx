@@ -39,7 +39,7 @@ export function Products() {
       <View style={styles.actionsContainer}>
         <Pressable
           style={styles.secondaryAction}
-          onPress={() => navigation.navigate('AddProduct')}
+          onPress={() => navigation.navigate('AddProductDefinition')}
         >
           <Text style={styles.secondaryActionText}>Agregar producto</Text>
         </Pressable>

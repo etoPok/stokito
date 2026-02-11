@@ -101,7 +101,7 @@ export function Inventory() {
         {inventories.length > 0 && (
           <Pressable
             style={styles.secondaryAction}
-            onPress={() => navigation.navigate('AddProduct')}
+            onPress={() => navigation.navigate('AddProductToInventory')}
           >
             <Text style={styles.secondaryActionText}>Agregar producto</Text>
           </Pressable>

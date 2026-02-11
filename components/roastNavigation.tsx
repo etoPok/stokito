@@ -6,9 +6,10 @@ import { Inventory } from './inventory';
 import { Sell } from './sell';
 import { Checkout } from './checkout';
 import { Refund } from './refund';
-import { AddProduct } from './addProduct';
+import { AddProductToInventory } from './addProductToInventory';
 import { AddInventory } from './addInventory';
 import { Products } from './products';
+import { AddProductDefinition } from './addProductDefinition';
 
 const RootStack = createNativeStackNavigator({
   screens: {
@@ -42,8 +43,14 @@ const RootStack = createNativeStackNavigator({
         headerShown: false,
       },
     },
-    AddProduct: {
-      screen: AddProduct,
+    AddProductDefinition: {
+      screen: AddProductDefinition,
+      options: {
+        headerShown: false,
+      },
+    },
+    AddProductToInventory: {
+      screen: AddProductToInventory,
       options: {
         headerShown: false,
       },
