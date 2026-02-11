@@ -8,6 +8,7 @@ export type RootStackParamList = {
   Checkout: undefined;
   AddProduct: undefined;
   AddInventory: undefined;
+  Products: undefined;
 };
 
 export type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList>;

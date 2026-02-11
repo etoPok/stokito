@@ -20,28 +20,28 @@ type OptionItem = {
 const options: OptionItem[] = [
   {
     id: '1',
-    title: 'Venta',
-    image: require('../assets/favicon.png'),
-    route: 'Sell',
-  },
-  {
-    id: '2',
-    title: 'Rembolso',
-    image: require('../assets/favicon.png'),
-    route: 'Refund',
-  },
-  {
-    id: '3',
-    title: 'Inventario',
+    title: 'Inventarios',
     image: require('../assets/favicon.png'),
     route: 'Inventory',
   },
   {
-    id: '4',
-    title: 'Caja',
+    id: '2',
+    title: 'Productos',
     image: require('../assets/favicon.png'),
-    route: 'Checkout',
+    route: 'Products',
   },
+  // {
+  //   id: '3',
+  //   title: 'Inventario',
+  //   image: require('../assets/favicon.png'),
+  //   route: 'Inventory',
+  // },
+  // {
+  //   id: '4',
+  //   title: 'Caja',
+  //   image: require('../assets/favicon.png'),
+  //   route: 'Checkout',
+  // },
 ];
 
 export function Home() {
