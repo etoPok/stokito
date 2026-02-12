@@ -12,26 +12,17 @@ import { useNavigation } from '@react-navigation/native';
 import { HomeNavigationProp } from '../types';
 import { Product } from '../domain/product';
 import { useProducts } from '../hooks/productContext';
-import { addProductToInventory } from '../services/repositories';
-import { useInventories } from '../hooks/inventoryContext';
-import Inventory from '../domain/inventory';
+import { setProduct } from '../services/repositories';
 
 let name: string | null = null;
+let description: string = '';
 let sku: string | null = null;
-let description: string | null = null;
-let stock: number | null = null;
 
-export function AddProduct() {
+export function AddProductDefinition() {
   const navigation = useNavigation<HomeNavigationProp>();
   const insets = useSafeAreaInsets();
   const [discontinued, setDiscontinued] = useState(false);
   const { addProduct } = useProducts();
-
-  const { inventories } = useInventories();
-  const [inventoryOpen, setInventoryOpen] = useState(false);
-  const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(
-    null
-  );
 
   return (
     <View
@@ -84,19 +75,6 @@ export function AddProduct() {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Stock</Text>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            placeholder="Cantidad disponible"
-            placeholderTextColor="#777"
-            onChangeText={(value) => {
-              stock = Number(value);
-            }}
-          />
-        </View>
-
-        <View style={styles.field}>
           <Text style={styles.label}>Descripción</Text>
           <TextInput
             style={[styles.input, styles.multiline]}
@@ -113,57 +91,23 @@ export function AddProduct() {
           <Text style={styles.label}>Descontinuado</Text>
           <Switch value={discontinued} onValueChange={setDiscontinued} />
         </View>
-
-        <View style={styles.field}>
-          <Text style={styles.label}>Inventario</Text>
-
-          <Pressable
-            style={styles.dropdownButton}
-            onPress={() => setInventoryOpen(!inventoryOpen)}
-          >
-            <Text style={styles.dropdownText}>
-              {selectedInventory
-                ? selectedInventory.name
-                : 'Seleccionar inventario'}
-            </Text>
-          </Pressable>
-
-          {inventoryOpen && (
-            <View style={styles.dropdown}>
-              {inventories.map((inv) => (
-                <Pressable
-                  key={inv.id}
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    setSelectedInventory(inv);
-                    setInventoryOpen(false);
-                  }}
-                >
-                  <Text style={styles.dropdownItemText}>{inv.name}</Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
-        </View>
       </View>
 
       <View style={styles.footer}>
         <Pressable
           style={styles.saveButton}
           onPress={async () => {
-            if (!name || !description || !stock || !selectedInventory) {
+            if (!name) {
               console.log('Invalid data');
               return;
             }
             let newProduct: Product | null;
             try {
-              newProduct = await addProductToInventory(
+              newProduct = await setProduct(
                 name,
                 description,
                 discontinued,
-                sku,
-                stock,
-                selectedInventory!.id!
+                sku
               );
             } catch (error) {
               console.log('Failed to add new product');
@@ -217,7 +161,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 10,
   },
   inventoryRow: {
     marginTop: 12,

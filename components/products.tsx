@@ -1,32 +1,16 @@
-import {
-  Button,
-  View,
-  FlatList,
-  StyleSheet,
-  Pressable,
-  Text,
-} from 'react-native';
+import { View, FlatList, StyleSheet, Pressable, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { CardButton } from './cardButton';
 import { HomeNavigationProp } from '../types';
 import { useProducts } from '../hooks/productContext';
-import { useInventories } from '../hooks/inventoryContext';
-import { useState } from 'react';
-import {
-  getAllInventories,
-  getAllProducts,
-  removeInventory,
-  removeProduct,
-} from '../services/repositories';
+import { getAllProducts, removeProduct } from '../services/repositories';
 
-export function Inventory() {
+export function Products() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<HomeNavigationProp>();
   const { products, setProducts } = useProducts();
-  const { inventories, setInventories } = useInventories();
-  const [deleteInventoryOpen, setDeleteInventoryOpen] = useState(false);
 
   return (
     <View
@@ -47,7 +31,7 @@ export function Inventory() {
           <Text style={styles.backText}>Volver</Text>
         </Pressable>
 
-        <Text style={styles.headerTitle}>Inventario</Text>
+        <Text style={styles.headerTitle}>Productos</Text>
 
         <View style={{ width: 60 }} />
       </View>
@@ -55,57 +39,10 @@ export function Inventory() {
       <View style={styles.actionsContainer}>
         <Pressable
           style={styles.secondaryAction}
-          onPress={() => navigation.navigate('AddInventory')}
+          onPress={() => navigation.navigate('AddProductDefinition')}
         >
-          <Text style={styles.secondaryActionText}>+ Nuevo inventario</Text>
+          <Text style={styles.secondaryActionText}>Agregar producto</Text>
         </Pressable>
-
-        {inventories.length > 0 && (
-          <Pressable
-            style={styles.secondaryAction}
-            onPress={() => {
-              setDeleteInventoryOpen(!deleteInventoryOpen);
-            }}
-          >
-            <Text style={styles.secondaryActionText}>Eliminar inventario</Text>
-          </Pressable>
-        )}
-
-        {inventories.length > 0 && deleteInventoryOpen && (
-          <View style={styles.dropdown}>
-            {inventories.map((inv) => (
-              <Pressable
-                key={inv.id}
-                style={styles.dropdownItem}
-                onPress={async () => {
-                  try {
-                    const deleted = await removeInventory(inv.id!);
-                    if (deleted) {
-                      console.log('Remove inventory');
-                    }
-                    const newInventories = await getAllInventories();
-                    setInventories(newInventories);
-                    setDeleteInventoryOpen(false);
-                  } catch (error) {
-                    console.log('Failed to remove inventory');
-                    throw error;
-                  }
-                }}
-              >
-                <Text style={styles.dropdownItemText}>{inv.name}</Text>
-              </Pressable>
-            ))}
-          </View>
-        )}
-
-        {inventories.length > 0 && (
-          <Pressable
-            style={styles.secondaryAction}
-            onPress={() => navigation.navigate('AddProductToInventory')}
-          >
-            <Text style={styles.secondaryActionText}>Agregar producto</Text>
-          </Pressable>
-        )}
       </View>
 
       <FlatList
@@ -211,41 +148,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
-  deleteInventory: {
-    backgroundColor: '#991B1B',
-    paddingVertical: 6,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
   actionText: {
     color: 'white',
     fontSize: 12,
     fontWeight: '600',
-  },
-  dropdownButton: {
-    backgroundColor: '#111',
-    borderRadius: 8,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#222',
-  },
-  dropdownText: {
-    color: '#fff',
-  },
-  dropdown: {
-    backgroundColor: '#111',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#222',
-    overflow: 'hidden',
-    marginBottom: 10,
-  },
-  dropdownItem: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#222',
-  },
-  dropdownItemText: {
-    color: '#fff',
   },
 });
