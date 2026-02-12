@@ -1,20 +1,20 @@
-import * as SQLite from "expo-sqlite";
+import * as SQLite from 'expo-sqlite';
 
 class Database {
   private static instance: Database | null = null;
   private db: SQLite.SQLiteDatabase | null = null;
-  private databaseName: string = "";
+  private databaseName: string = '';
 
   private constructor() {}
 
-  static async getInstance(databaseName: string) {
+  static async getInstance(databaseName: string): Promise<Database> {
     if (!Database.instance) {
       Database.instance = new Database();
       Database.instance.db = await SQLite.openDatabaseAsync(databaseName);
       Database.instance.databaseName = databaseName;
-      Database.instance.createDatabase();
+      await Database.instance.createDatabase();
 
-      console.log("Database created");
+      console.log('Database created');
     }
 
     return Database.instance;
@@ -25,7 +25,7 @@ class Database {
       PRAGMA foreign_keys = ON;
 
       CREATE TABLE IF NOT EXISTS product_definition (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         sku TEXT UNIQUE,
         description TEXT,
@@ -59,16 +59,29 @@ class Database {
   }
 
   get connection() {
-    if (!this.db) {
-      throw new Error("Database not initialized");
+    if (this.db === null) {
+      throw new Error('Database not initialized');
     }
     return this.db;
   }
 
   public async resetDatabase() {
-    await SQLite.deleteDatabaseAsync(Database.instance!.databaseName);
-    await SQLite.openDatabaseAsync(Database.instance!.databaseName);
-    this.createDatabase();
+    if (Database.instance === null)
+      throw new Error('Database instance not initialized');
+
+    // Close current database
+    const _db = Database.instance.connection;
+    await _db.closeAsync();
+
+    // Delete and open database
+    await SQLite.deleteDatabaseAsync(Database.instance.databaseName);
+    Database.instance.db = await SQLite.openDatabaseAsync(
+      Database.instance.databaseName
+    );
+
+    // Create database
+    await Database.instance.createDatabase();
+    console.log('Reset database');
   }
 }
 

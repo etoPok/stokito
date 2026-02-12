@@ -1,12 +1,12 @@
 type ProductState =
-  | "registered"
-  | "in_stock"
-  | "for_sale"
-  | "discontinued"
-  | "not_registered";
+  | 'registered'
+  | 'in_stock'
+  | 'for_sale'
+  | 'discontinued'
+  | 'not_registered';
 
 export class Product {
-  private _id?: number;
+  private _id: string;
   public name: string;
   public sku: string | null;
   public description: string;
@@ -15,15 +15,17 @@ export class Product {
   private _createdAt: string;
 
   constructor(
+    id: string,
     name: string,
     description: string,
     isDiscontinued: boolean,
-    sku: string | null = null,
+    sku: string | null = null
   ) {
+    this._id = id;
     this.name = name;
     this.sku = sku;
     this.description = description;
-    this.state = "not_registered";
+    this.state = 'not_registered';
     this.isDiscontinued = isDiscontinued;
     this._createdAt = new Date().toISOString();
   }
@@ -32,11 +34,11 @@ export class Product {
     return this._createdAt;
   }
 
-  get id(): number | undefined {
+  get id(): string {
     return this._id;
   }
 
-  setId(id: number): void {
+  setId(id: string): void {
     this._id = id;
   }
 }

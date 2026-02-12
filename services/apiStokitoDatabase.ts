@@ -2,12 +2,13 @@ import DB from '../services/dataBase';
 
 interface StokitoDatabase {
   addProduct(
+    id: string,
     name: string,
     description: string,
     isDiscontinued: boolean,
     createdAt: string,
     sku: string | null
-  ): Promise<number>;
+  ): Promise<string>;
   removeProduct(id: number): Promise<number>;
   findProduct(id: number): Promise<any>;
   getAllProducts(): Promise<any[]>;
@@ -22,7 +23,7 @@ interface StokitoDatabase {
   getAllInventories(): Promise<any[]>;
 
   addProductToInventory(
-    productId: number,
+    productId: string,
     inventoryId: number,
     stock: number,
     created_at: string
@@ -31,26 +32,27 @@ interface StokitoDatabase {
 
 class ApiStokitoDatabase implements StokitoDatabase {
   async addProduct(
+    id: string,
     name: string,
     description: string,
     isDiscontinued: boolean,
     createdAt: string,
     sku: string | null
-  ): Promise<number> {
+  ): Promise<string> {
     const db = (await DB.getInstance('')).connection;
     // Using throw makes the async function return a rejected promise which is then handled by a try-catch.
     // result -> resusable SQL statment
     const result = await db.runAsync(
       `
-        INSERT INTO product_definition (name, sku, description, is_discontinued, created_at)
-        VALUES (?, ?, ?, ?, ?);
+        INSERT INTO product_definition (id, name, sku, description, is_discontinued, created_at)
+        VALUES (?, ?, ?, ?, ?, ?);
       `,
-      [name, sku, description, Number(isDiscontinued), createdAt]
+      [id, name, sku, description, Number(isDiscontinued), createdAt]
     );
     if (result.changes !== 1) {
       throw new Error('Unexpected number of affected rows during insertion');
     }
-    return result.lastInsertRowId;
+    return id;
   }
 
   async removeProduct(id: number): Promise<number> {
@@ -157,7 +159,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
   }
 
   async addProductToInventory(
-    productId: number,
+    productId: string,
     inventoryId: number,
     stock: number,
     created_at: string

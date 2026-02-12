@@ -5,20 +5,21 @@ import { Product } from '../domain/product';
 // PRODUCT
 
 export async function setProduct(
+  id: string,
   name: string,
   description: string,
   isDiscontinued: boolean,
   sku: string | null
 ): Promise<Product> {
-  const product = new Product(name, description, isDiscontinued, sku);
-  const resultId = await stokitoDB.addProduct(
+  const product = new Product(id, name, description, isDiscontinued, sku);
+  await stokitoDB.addProduct(
+    product.id,
     product.name,
     product.description,
     product.isDiscontinued,
     product.createdAt,
     product.sku
   );
-  product.setId(resultId);
   return product;
 }
 
@@ -27,14 +28,15 @@ export async function getAllProducts(): Promise<Product[]> {
   const rows = (await stokitoDB.getAllProducts()) as Product[];
   const products: Product[] = [];
   rows.forEach((r) => {
-    const inventory = new Product(
+    const product = new Product(
+      r.id,
       r.name,
       r.description,
       r.isDiscontinued,
       r.sku
     );
-    inventory.setId(r.id!);
-    products.push(inventory);
+    product.setId(r.id!);
+    products.push(product);
   });
   return products;
 }
@@ -42,6 +44,7 @@ export async function getAllProducts(): Promise<Product[]> {
 export async function findProduct(id: number): Promise<Product> {
   const row = (await stokitoDB.findProduct(id)) as Product;
   const product = new Product(
+    row.id,
     row.name,
     row.description,
     row.isDiscontinued,
@@ -97,7 +100,7 @@ export async function removeInventory(id: number): Promise<boolean> {
 
 async function setInventoryItem(
   inventoryId: number,
-  productId: number,
+  productId: string,
   stock: number
 ): Promise<number | null> {
   const created_at = new Date().toISOString();
@@ -111,6 +114,7 @@ async function setInventoryItem(
 }
 
 export async function addProductToInventory(
+  id: string,
   name: string,
   description: string,
   isDiscontinued: boolean,
@@ -118,7 +122,7 @@ export async function addProductToInventory(
   stock: number,
   inventoryId: number
 ): Promise<Product | null> {
-  const product = await setProduct(name, description, isDiscontinued, sku);
-  await setInventoryItem(inventoryId, product.id!, stock);
+  const product = await setProduct(id, name, description, isDiscontinued, sku);
+  await setInventoryItem(inventoryId, product.id, stock);
   return product;
 }

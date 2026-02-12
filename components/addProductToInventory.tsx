@@ -181,13 +181,20 @@ export function AddProductToInventory() {
           <Pressable
             style={styles.saveButton}
             onPress={async () => {
-              if (!name || !description || !stock || !selectedInventory) {
+              if (
+                !name ||
+                !description ||
+                !stock ||
+                !selectedInventory ||
+                idQR === undefined
+              ) {
                 console.log('Invalid data');
                 return;
               }
               let newProduct: Product | null;
               try {
                 newProduct = await addProductToInventory(
+                  idQR,
                   name,
                   description,
                   discontinued,

@@ -124,13 +124,14 @@ export function AddProductDefinition() {
         <Pressable
           style={styles.saveButton}
           onPress={async () => {
-            if (!name) {
+            if (!name || idQR === undefined) {
               console.log('Invalid data');
               return;
             }
             let newProduct: Product | null;
             try {
               newProduct = await setProduct(
+                idQR,
                 name,
                 description,
                 discontinued,
