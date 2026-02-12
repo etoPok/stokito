@@ -1,11 +1,13 @@
-import { createStaticNavigation } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createStaticNavigation } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { Home } from "./home";
-import { Inventory } from "./inventory";
-import { Sell } from "./sell";
-import { Checkout } from "./checkout";
-import { Refund } from "./refund";
+import { Home } from './home';
+import { Inventory } from './inventory';
+import { Sell } from './sell';
+import { Checkout } from './checkout';
+import { Refund } from './refund';
+import { AddProduct } from './addProduct';
+import { AddInventory } from './addInventory';
 
 const RootStack = createNativeStackNavigator({
   screens: {
@@ -35,6 +37,18 @@ const RootStack = createNativeStackNavigator({
     },
     Refund: {
       screen: Refund,
+      options: {
+        headerShown: false,
+      },
+    },
+    AddProduct: {
+      screen: AddProduct,
+      options: {
+        headerShown: false,
+      },
+    },
+    AddInventory: {
+      screen: AddInventory,
       options: {
         headerShown: false,
       },

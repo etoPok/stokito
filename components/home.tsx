@@ -1,13 +1,14 @@
-import { View, FlatList, Text, StyleSheet } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
+import { View, FlatList, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 
-import { CardButton } from "./cardButton";
-import { RootStackParamList } from "../types";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-
-// "Home" entrega contexto.
-type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
+import { CardButton } from './cardButton';
+import { RootStackParamList } from '../types';
+import { HomeNavigationProp } from '../types';
+import { useEffect } from 'react';
+import { useInventories } from '../hooks/inventoryContext';
+import { useProducts } from '../hooks/productContext';
+import { getAllInventories, getAllProducts } from '../services/repositories';
 
 type OptionItem = {
   id: string;
@@ -18,40 +19,58 @@ type OptionItem = {
 
 const options: OptionItem[] = [
   {
-    id: "1",
-    title: "Venta",
-    image: require("../assets/favicon.png"),
-    route: "Sell",
+    id: '1',
+    title: 'Venta',
+    image: require('../assets/favicon.png'),
+    route: 'Sell',
   },
   {
-    id: "2",
-    title: "Rembolso",
-    image: require("../assets/favicon.png"),
-    route: "Refund",
+    id: '2',
+    title: 'Rembolso',
+    image: require('../assets/favicon.png'),
+    route: 'Refund',
   },
   {
-    id: "3",
-    title: "Inventario",
-    image: require("../assets/favicon.png"),
-    route: "Inventory",
+    id: '3',
+    title: 'Inventario',
+    image: require('../assets/favicon.png'),
+    route: 'Inventory',
   },
   {
-    id: "4",
-    title: "Caja",
-    image: require("../assets/favicon.png"),
-    route: "Checkout",
+    id: '4',
+    title: 'Caja',
+    image: require('../assets/favicon.png'),
+    route: 'Checkout',
   },
 ];
 
 export function Home() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<HomeNavigationProp>();
+  const { setProducts } = useProducts();
+  const { setInventories } = useInventories();
+  useEffect(() => {
+    console.log('effect start');
+    let active = true;
+    getAllInventories().then((inventories) => {
+      console.log('query resolved inventories', active);
+      if (active) setInventories(inventories);
+    });
+    getAllProducts().then((products) => {
+      console.log('query resolved products', active);
+      if (active) setProducts(products);
+    });
+    return () => {
+      console.log('cleanup');
+      active = false;
+    };
+  }, []);
 
   return (
     <View
       style={{
         flex: 1,
-        backgroundColor: "black",
+        backgroundColor: 'black',
         paddingBottom: insets.bottom,
         paddingTop: insets.top,
       }}
@@ -78,9 +97,9 @@ export function Home() {
 
 const styles = StyleSheet.create({
   logoText: {
-    color: "white",
+    color: 'white',
     fontSize: 32,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     paddingBottom: 24,
   },
   flatlistOptions: {
