@@ -6,6 +6,7 @@ import Navigation from './components/roastNavigation';
 import DB from './services/dataBase';
 import { ProductProvider } from './hooks/productContext';
 import { InventoryProvider } from './hooks/inventoryContext';
+import 'react-native-get-random-values';
 
 export default function App() {
   const [dbReady, setDbReady] = useState(false);

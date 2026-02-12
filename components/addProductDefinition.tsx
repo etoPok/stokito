@@ -7,12 +7,14 @@ import {
   Pressable,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { HomeNavigationProp } from '../types';
 import { Product } from '../domain/product';
 import { useProducts } from '../hooks/productContext';
 import { setProduct } from '../services/repositories';
+import QRCode from 'react-native-qrcode-svg';
+import { v4 as uuidv4 } from 'uuid';
 
 let name: string | null = null;
 let description: string = '';
@@ -23,6 +25,10 @@ export function AddProductDefinition() {
   const insets = useSafeAreaInsets();
   const [discontinued, setDiscontinued] = useState(false);
   const { addProduct } = useProducts();
+  const [idQR, setIdQR] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    console.log('idQR: ', idQR);
+  }, [idQR]);
 
   return (
     <View
@@ -90,6 +96,27 @@ export function AddProductDefinition() {
         <View style={styles.switchRow}>
           <Text style={styles.label}>Descontinuado</Text>
           <Switch value={discontinued} onValueChange={setDiscontinued} />
+        </View>
+
+        <View style={styles.field}>
+          {idQR === undefined && (
+            <Pressable
+              style={styles.qrButton}
+              onPress={() => {
+                setIdQR(uuidv4());
+              }}
+            >
+              <Text style={styles.qrButtonText}>Generar código QR</Text>
+            </Pressable>
+          )}
+          {idQR !== undefined && (
+            <View style={styles.qrPreviewContainer}>
+              <View style={styles.qrBox}>
+                <QRCode value={idQR} size={150} />
+                <Text style={styles.qrPlaceholderText}>Vista previa</Text>
+              </View>
+            </View>
+          )}
         </View>
       </View>
 
@@ -166,32 +193,6 @@ const styles = StyleSheet.create({
   inventoryRow: {
     marginTop: 12,
   },
-  dropdownButton: {
-    backgroundColor: '#111',
-    borderRadius: 8,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#222',
-  },
-  dropdownText: {
-    color: '#fff',
-  },
-  dropdown: {
-    marginTop: 8,
-    backgroundColor: '#111',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#222',
-    overflow: 'hidden',
-  },
-  dropdownItem: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#222',
-  },
-  dropdownItemText: {
-    color: '#fff',
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -225,5 +226,41 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
     fontWeight: '600',
+  },
+
+  qrButton: {
+    backgroundColor: '#222',
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  qrButtonText: {
+    color: '#ccc',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  qrPreviewContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+  },
+  qrBox: {
+    width: 200,
+    height: 200,
+    backgroundColor: '#111',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#222',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  qrPlaceholderText: {
+    marginTop: 10,
+    color: '#ccc',
+    fontSize: 14,
   },
 });
