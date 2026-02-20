@@ -30,18 +30,12 @@ const options: OptionItem[] = [
     image: require('../assets/favicon.png'),
     route: 'Products',
   },
-  // {
-  //   id: '3',
-  //   title: 'Inventario',
-  //   image: require('../assets/favicon.png'),
-  //   route: 'Inventory',
-  // },
-  // {
-  //   id: '4',
-  //   title: 'Caja',
-  //   image: require('../assets/favicon.png'),
-  //   route: 'Checkout',
-  // },
+  {
+    id: '3',
+    title: 'Caja',
+    image: require('../assets/favicon.png'),
+    route: 'Checkout',
+  },
 ];
 
 export function Home() {

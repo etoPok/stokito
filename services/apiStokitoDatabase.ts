@@ -10,7 +10,7 @@ interface StokitoDatabase {
     sku: string | null
   ): Promise<string>;
   removeProduct(id: number): Promise<number>;
-  findProduct(id: number): Promise<any>;
+  findProduct(id: string): Promise<any>;
   getAllProducts(): Promise<any[]>;
 
   addInventory(
@@ -72,7 +72,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     return result.changes;
   }
 
-  async findProduct(id: number): Promise<any> {
+  async findProduct(id: string): Promise<any> {
     const db = (await DB.getInstance('')).connection;
     const row = await db.getFirstAsync(
       `
@@ -81,7 +81,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
       [id]
     );
     if (!row) {
-      throw new Error('Row not found for id ${id}');
+      throw new Error(`Row not found for id ${id}`);
     }
     return row;
   }

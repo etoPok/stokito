@@ -3,7 +3,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { Home } from './home';
 import { Inventory } from './inventory';
-import { Sell } from './sell';
 import { Checkout } from './checkout';
 import { Refund } from './refund';
 import { AddProductToInventory } from './addProductToInventory';
@@ -21,12 +20,6 @@ const RootStack = createNativeStackNavigator({
     },
     Inventory: {
       screen: Inventory,
-      options: {
-        headerShown: false,
-      },
-    },
-    Sell: {
-      screen: Sell,
       options: {
         headerShown: false,
       },

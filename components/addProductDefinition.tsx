@@ -112,7 +112,12 @@ export function AddProductDefinition() {
           {idQR !== undefined && (
             <View style={styles.qrPreviewContainer}>
               <View style={styles.qrBox}>
-                <QRCode value={idQR} size={150} />
+                <QRCode
+                  value={idQR}
+                  size={200}
+                  backgroundColor="black"
+                  color="white"
+                />
                 <Text style={styles.qrPlaceholderText}>Vista previa</Text>
               </View>
             </View>
@@ -138,7 +143,7 @@ export function AddProductDefinition() {
                 sku
               );
             } catch (error) {
-              console.log('Failed to add new product');
+              console.log('Failed to add new product. Error: ', error);
               throw error;
             }
             addProduct(newProduct!);
@@ -249,8 +254,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   qrBox: {
-    width: 200,
-    height: 200,
+    width: 300,
+    height: 300,
     backgroundColor: '#111',
     borderRadius: 8,
     borderWidth: 1,
@@ -258,6 +263,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 16,
   },
   qrPlaceholderText: {
     marginTop: 10,

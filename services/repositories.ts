@@ -41,7 +41,7 @@ export async function getAllProducts(): Promise<Product[]> {
   return products;
 }
 
-export async function findProduct(id: number): Promise<Product> {
+export async function findProduct(id: string): Promise<Product> {
   const row = (await stokitoDB.findProduct(id)) as Product;
   const product = new Product(
     row.id,

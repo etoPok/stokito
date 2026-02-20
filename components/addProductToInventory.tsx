@@ -168,7 +168,7 @@ export function AddProductToInventory() {
               {idQR !== undefined && (
                 <View style={styles.qrPreviewContainer}>
                   <View style={styles.qrBox}>
-                    <QRCode value={idQR} size={150} />
+                    <QRCode value={idQR} size={200} />
                     <Text style={styles.qrPlaceholderText}>Vista previa</Text>
                   </View>
                 </View>
