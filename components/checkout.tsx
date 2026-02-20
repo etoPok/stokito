@@ -5,6 +5,10 @@ import { HomeNavigationProp } from '../types';
 import { useCallback, useState } from 'react';
 import { AndroidCamera } from './camera.android';
 import { findProduct } from '../services/repositories';
+import ScannerMask from './scannerMask';
+
+const SCAN_SIZE = 260;
+const RADIUS = 20;
 
 export function Checkout() {
   const insets = useSafeAreaInsets();
@@ -42,64 +46,43 @@ export function Checkout() {
       }}
     >
       <AndroidCamera onScan={handleScan} locked={scannerLocked}>
-        <View style={styles.header}>
-          <Pressable
-            style={styles.backButton}
-            onPress={() => {
-              navigation.goBack();
-            }}
-          >
-            <Text style={styles.backText}>Volver</Text>
-          </Pressable>
-          <View style={{ width: 60 }} />
-        </View>
-
+        <ScannerMask scanSize={SCAN_SIZE} radius={RADIUS} />
         <View style={styles.overlay}>
-          <View style={styles.topSection}>
-            <Text style={styles.text}>Escanear código QR</Text>
-          </View>
-
-          <View style={styles.centerSection}>
-            <View style={styles.scanArea} />
-          </View>
-
-          <View style={styles.bottomSection}>
-            {confirmProduct && (
-              <Pressable
-                style={styles.button}
-                onPress={() => {
-                  setConfirmProduct(false);
-                  setScannerLocked(false);
-                }}
-              >
-                <Text style={styles.buttonText}>Confirmar</Text>
-              </Pressable>
-            )}
+          <View style={styles.header}>
+            <Pressable
+              style={styles.backButton}
+              onPress={() => {
+                navigation.goBack();
+              }}
+            >
+              <Text style={styles.backText}>Volver</Text>
+            </Pressable>
+            <View style={{ width: 60 }} />
           </View>
         </View>
       </AndroidCamera>
+      <View>
+        <Pressable
+          style={[
+            styles.button,
+            { bottom: insets.bottom, opacity: confirmProduct ? 1 : 0 },
+          ]}
+          onPress={() => {
+            setConfirmProduct(false);
+            setScannerLocked(false);
+          }}
+          disabled={!confirmProduct}
+        >
+          <Text style={styles.buttonText}>Agregar a la cuenta</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
-    padding: 24,
-  },
-  topSection: {
-    alignItems: 'center',
-  },
-
-  centerSection: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  bottomSection: {
-    justifyContent: 'flex-end',
-    alignItems: 'center',
   },
   text: {
     color: 'white',
@@ -118,13 +101,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   scanArea: {
-    width: 250,
-    height: 250,
-    borderWidth: 2,
-    borderColor: 'white',
-    alignSelf: 'center',
-    marginTop: '30%',
-    borderRadius: 12,
+    width: SCAN_SIZE,
+    height: SCAN_SIZE,
+    borderWidth: 3,
+    borderColor: '#00FFAA',
+    borderRadius: 20,
   },
   header: {
     flexDirection: 'row',

@@ -3,8 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { CardButton } from './cardButton';
-import { RootStackParamList } from '../types';
-import { HomeNavigationProp } from '../types';
+import { RootStackParamList, HomeNavigationProp } from '../types';
 import { useEffect } from 'react';
 import { useInventories } from '../hooks/inventoryContext';
 import { useProducts } from '../hooks/productContext';
