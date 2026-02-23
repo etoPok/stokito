@@ -1,20 +1,34 @@
 import { stokitoDB } from './apiStokitoDatabase';
 import Inventory from '../domain/inventory';
 import { Product } from '../domain/product';
+import { Sale } from '../domain/sale';
+import { SaleDatail } from '../domain/saleDetails';
 
 // PRODUCT
 
 export async function setProduct(
   id: string,
   name: string,
+  salePrice: number,
+  costPrice: number,
   description: string,
   isDiscontinued: boolean,
   sku: string | null
 ): Promise<Product> {
-  const product = new Product(id, name, description, isDiscontinued, sku);
+  const product = new Product(
+    id,
+    name,
+    salePrice,
+    costPrice,
+    description,
+    isDiscontinued,
+    sku
+  );
   await stokitoDB.addProduct(
     product.id,
     product.name,
+    product.salePrice,
+    product.costPrice,
     product.description,
     product.isDiscontinued,
     product.createdAt,
@@ -25,14 +39,16 @@ export async function setProduct(
 
 export async function getAllProducts(): Promise<Product[]> {
   // type-unsafe
-  const rows = (await stokitoDB.getAllProducts()) as Product[];
+  const rows = await stokitoDB.getAllProducts();
   const products: Product[] = [];
   rows.forEach((r) => {
     const product = new Product(
       r.id,
       r.name,
+      r.sae_price,
+      r.cost_price,
       r.description,
-      r.isDiscontinued,
+      r.is_discontinued,
       r.sku
     );
     product.setId(r.id!);
@@ -42,12 +58,14 @@ export async function getAllProducts(): Promise<Product[]> {
 }
 
 export async function findProduct(id: string): Promise<Product> {
-  const row = (await stokitoDB.findProduct(id)) as Product;
+  const row = await stokitoDB.findProduct(id);
   const product = new Product(
     row.id,
     row.name,
+    row.sale_price,
+    row.cost_price,
     row.description,
-    row.isDiscontinued,
+    row.is_discontinued,
     row.sku
   );
   return product;
@@ -86,7 +104,7 @@ export async function getAllInventories(): Promise<Inventory[]> {
 }
 
 export async function findInventory(id: number): Promise<Inventory> {
-  const row = (await stokitoDB.findProduct(id)) as Inventory;
+  const row = (await stokitoDB.findInventory(id)) as Inventory;
   const inventory = new Inventory(row.name, row.location);
   return inventory;
 }
@@ -116,13 +134,63 @@ async function setInventoryItem(
 export async function addProductToInventory(
   id: string,
   name: string,
+  salePrice: number,
+  costPrice: number,
   description: string,
   isDiscontinued: boolean,
   sku: string | null,
   stock: number,
   inventoryId: number
-): Promise<Product | null> {
-  const product = await setProduct(id, name, description, isDiscontinued, sku);
+): Promise<Product> {
+  const product = await setProduct(
+    id,
+    name,
+    salePrice,
+    costPrice,
+    description,
+    isDiscontinued,
+    sku
+  );
   await setInventoryItem(inventoryId, product.id, stock);
   return product;
+}
+
+// SALE
+
+export async function addSale(id: string, total: number): Promise<Sale> {
+  const date = new Date().toISOString();
+  const resultId = await stokitoDB.addSale(id, date, total);
+  const sale = new Sale(resultId, date, total);
+  return sale;
+}
+
+// SALE PRODUCT
+
+export async function addProductToSale(
+  id: string,
+  productId: string,
+  saleId: string,
+  productName: string,
+  price: number,
+  quantity: number,
+  subtotal: number
+): Promise<SaleDatail> {
+  await stokitoDB.addProductToSale(
+    id,
+    productId,
+    saleId,
+    productName,
+    price,
+    subtotal,
+    quantity
+  );
+  return new SaleDatail(
+    id,
+    saleId,
+    productId,
+    productName,
+    price,
+    subtotal,
+    quantity
+  );
 }

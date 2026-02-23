@@ -7,6 +7,7 @@ import Navigation from './components/roastNavigation';
 import DB from './services/dataBase';
 import { ProductProvider } from './hooks/productContext';
 import { InventoryProvider } from './hooks/inventoryContext';
+import { SaleDetailProvider } from './hooks/saleDetailsContext';
 
 export default function App() {
   const [dbReady, setDbReady] = useState(false);
@@ -30,8 +31,10 @@ export default function App() {
     <SafeAreaProvider>
       <ProductProvider>
         <InventoryProvider>
-          <StatusBar style="light" />
-          <Navigation />
+          <SaleDetailProvider>
+            <StatusBar style="light" />
+            <Navigation />
+          </SaleDetailProvider>
         </InventoryProvider>
       </ProductProvider>
     </SafeAreaProvider>

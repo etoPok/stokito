@@ -23,6 +23,8 @@ let name: string | null = null;
 let sku: string | null = null;
 let description: string | null = null;
 let stock: number | null = null;
+let salePrice: number | null = null;
+let costPrice: number | null = null;
 
 export function AddProductToInventory() {
   const navigation = useNavigation<HomeNavigationProp>();
@@ -32,6 +34,8 @@ export function AddProductToInventory() {
 
   const { inventories } = useInventories();
   const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [formatedSalePrice, setFormatedSalePrice] = useState<string>('');
+  const [formatedCostPrice, setFormatedCostPrice] = useState<string>('');
   const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(
     null
   );
@@ -40,6 +44,17 @@ export function AddProductToInventory() {
   useEffect(() => {
     console.log('idQR: ', idQR);
   }, [idQR]);
+
+  const getFormatedPrice = (value: number): string => {
+    const formatted = (value / 100).toFixed(2);
+    return formatted;
+  };
+
+  const getPriceToNumber = (value: string): number => {
+    const onlyNumbers = value.replace(/[^0-9]/g, '');
+    const parsedSalePrice = parseInt(onlyNumbers || '0', 10);
+    return parsedSalePrice;
+  };
 
   return (
     <View
@@ -51,23 +66,23 @@ export function AddProductToInventory() {
         },
       ]}
     >
+      <View style={styles.header}>
+        <Pressable
+          style={styles.backButton}
+          onPress={() => {
+            navigation.goBack();
+          }}
+        >
+          <Text style={styles.backText}>Volver</Text>
+        </Pressable>
+
+        <Text style={styles.headerTitle}>Nuevo producto</Text>
+
+        <View style={{ width: 60 }} />
+      </View>
+
       <ScrollView>
         <View style={styles.container}>
-          <View style={styles.header}>
-            <Pressable
-              style={styles.backButton}
-              onPress={() => {
-                navigation.goBack();
-              }}
-            >
-              <Text style={styles.backText}>Volver</Text>
-            </Pressable>
-
-            <Text style={styles.headerTitle}>Nuevo producto</Text>
-
-            <View style={{ width: 60 }} />
-          </View>
-
           <View style={styles.field}>
             <Text style={styles.label}>Nombre</Text>
             <TextInput
@@ -77,6 +92,42 @@ export function AddProductToInventory() {
               onChangeText={(value) => {
                 name = value;
               }}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Costo de producto</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Precio"
+              placeholderTextColor="#777"
+              onChangeText={(value) => {
+                const valueNumber = getPriceToNumber(value);
+                const formated = getFormatedPrice(valueNumber);
+
+                setFormatedCostPrice(formated);
+                costPrice = valueNumber;
+              }}
+              value={formatedCostPrice}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Precio de venta</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Precio"
+              placeholderTextColor="#777"
+              onChangeText={(value) => {
+                const valueNumber = getPriceToNumber(value);
+                const formated = getFormatedPrice(valueNumber);
+
+                setFormatedSalePrice(formated);
+                salePrice = valueNumber;
+              }}
+              value={formatedSalePrice}
             />
           </View>
 
@@ -186,28 +237,31 @@ export function AddProductToInventory() {
                 !description ||
                 !stock ||
                 !selectedInventory ||
+                !salePrice ||
+                !costPrice ||
                 idQR === undefined
               ) {
                 console.log('Invalid data');
                 return;
               }
-              let newProduct: Product | null;
               try {
-                newProduct = await addProductToInventory(
+                const newProduct: Product = await addProductToInventory(
                   idQR,
                   name,
+                  salePrice,
+                  costPrice,
                   description,
                   discontinued,
                   sku,
                   stock,
                   selectedInventory!.id!
                 );
+                addProduct(newProduct!);
+                console.log('Add new product');
               } catch (error) {
                 console.log('Failed to add new product');
                 throw error;
               }
-              addProduct(newProduct!);
-              console.log('Add new product');
             }}
           >
             <Text style={styles.saveButtonText}>Guardar</Text>

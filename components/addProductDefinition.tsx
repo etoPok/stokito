@@ -5,6 +5,7 @@ import {
   TextInput,
   Switch,
   Pressable,
+  ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
@@ -19,16 +20,32 @@ import { v4 as uuidv4 } from 'uuid';
 let name: string | null = null;
 let description: string = '';
 let sku: string | null = null;
+let salePrice: number | null = null;
+let costPrice: number | null = null;
 
 export function AddProductDefinition() {
   const navigation = useNavigation<HomeNavigationProp>();
   const insets = useSafeAreaInsets();
   const [discontinued, setDiscontinued] = useState(false);
+  const [formatedSalePrice, setFormatedSalePrice] = useState<string>('');
+  const [formatedCostPrice, setFormatedCostPrice] = useState<string>('');
   const { addProduct } = useProducts();
   const [idQR, setIdQR] = useState<string | undefined>(undefined);
+
   useEffect(() => {
     console.log('idQR: ', idQR);
   }, [idQR]);
+
+  const getFormatedPrice = (value: number): string => {
+    const formatted = (value / 100).toFixed(2);
+    return formatted;
+  };
+
+  const getPriceToNumber = (value: string): number => {
+    const onlyNumbers = value.replace(/[^0-9]/g, '');
+    const parsedSalePrice = parseInt(onlyNumbers || '0', 10);
+    return parsedSalePrice;
+  };
 
   return (
     <View
@@ -40,114 +57,158 @@ export function AddProductDefinition() {
         },
       ]}
     >
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Pressable
-            style={styles.backButton}
-            onPress={() => {
-              navigation.goBack();
-            }}
-          >
-            <Text style={styles.backText}>Volver</Text>
-          </Pressable>
+      <View style={styles.header}>
+        <Pressable
+          style={styles.backButton}
+          onPress={() => {
+            navigation.goBack();
+          }}
+        >
+          <Text style={styles.backText}>Volver</Text>
+        </Pressable>
 
-          <Text style={styles.headerTitle}>Nuevo producto</Text>
+        <Text style={styles.headerTitle}>Nuevo producto</Text>
 
-          <View style={{ width: 60 }} />
-        </View>
-
-        <View style={styles.field}>
-          <Text style={styles.label}>Nombre</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Nombre del producto"
-            placeholderTextColor="#777"
-            onChangeText={(value) => {
-              name = value;
-            }}
-          />
-        </View>
-
-        <View style={styles.field}>
-          <Text style={styles.label}>Código de producto (opcional)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="SKU o código interno"
-            placeholderTextColor="#777"
-            onChangeText={(value) => {
-              sku = value;
-            }}
-          />
-        </View>
-
-        <View style={styles.field}>
-          <Text style={styles.label}>Descripción</Text>
-          <TextInput
-            style={[styles.input, styles.multiline]}
-            placeholder="Descripción del producto"
-            placeholderTextColor="#777"
-            onChangeText={(value) => {
-              description = value;
-            }}
-            multiline
-          />
-        </View>
-
-        <View style={styles.switchRow}>
-          <Text style={styles.label}>Descontinuado</Text>
-          <Switch value={discontinued} onValueChange={setDiscontinued} />
-        </View>
-
-        <View style={styles.field}>
-          {idQR === undefined && (
-            <Pressable
-              style={styles.qrButton}
-              onPress={() => {
-                setIdQR(uuidv4());
-              }}
-            >
-              <Text style={styles.qrButtonText}>Generar código QR</Text>
-            </Pressable>
-          )}
-          {idQR !== undefined && (
-            <View style={styles.qrPreviewContainer}>
-              <View style={styles.qrBox}>
-                <QRCode
-                  value={idQR}
-                  size={200}
-                  backgroundColor="black"
-                  color="white"
-                />
-                <Text style={styles.qrPlaceholderText}>Vista previa</Text>
-              </View>
-            </View>
-          )}
-        </View>
+        <View style={{ width: 60 }} />
       </View>
+
+      <ScrollView>
+        <View style={styles.container}>
+          <View style={styles.field}>
+            <Text style={styles.label}>Nombre</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nombre del producto"
+              placeholderTextColor="#777"
+              onChangeText={(value) => {
+                name = value;
+              }}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Costo de producto</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Precio"
+              placeholderTextColor="#777"
+              onChangeText={(value) => {
+                const valueNumber = getPriceToNumber(value);
+                const formated = getFormatedPrice(valueNumber);
+
+                setFormatedCostPrice(formated);
+                costPrice = valueNumber;
+              }}
+              value={formatedCostPrice}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Precio de venta</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Precio"
+              placeholderTextColor="#777"
+              onChangeText={(value) => {
+                const valueNumber = getPriceToNumber(value);
+                const formated = getFormatedPrice(valueNumber);
+
+                setFormatedSalePrice(formated);
+                salePrice = valueNumber;
+              }}
+              value={formatedSalePrice}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Código de producto (opcional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="SKU o código interno"
+              placeholderTextColor="#777"
+              onChangeText={(value) => {
+                sku = value;
+              }}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Descripción</Text>
+            <TextInput
+              style={[styles.input, styles.multiline]}
+              placeholder="Descripción del producto"
+              placeholderTextColor="#777"
+              onChangeText={(value) => {
+                description = value;
+              }}
+              multiline
+            />
+          </View>
+
+          <View style={styles.switchRow}>
+            <Text style={styles.label}>Descontinuado</Text>
+            <Switch value={discontinued} onValueChange={setDiscontinued} />
+          </View>
+
+          <View style={styles.field}>
+            {idQR === undefined && (
+              <Pressable
+                style={styles.qrButton}
+                onPress={() => {
+                  setIdQR(uuidv4());
+                }}
+              >
+                <Text style={styles.qrButtonText}>Generar código QR</Text>
+              </Pressable>
+            )}
+            {idQR !== undefined && (
+              <View style={styles.qrPreviewContainer}>
+                <View style={styles.qrBox}>
+                  <QRCode
+                    value={idQR}
+                    size={200}
+                    backgroundColor="black"
+                    color="white"
+                  />
+                  <Text style={styles.qrPlaceholderText}>Vista previa</Text>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+      </ScrollView>
 
       <View style={styles.footer}>
         <Pressable
           style={styles.saveButton}
           onPress={async () => {
-            if (!name || idQR === undefined) {
+            if (
+              !name ||
+              idQR === undefined ||
+              salePrice == null ||
+              costPrice == null
+            ) {
               console.log('Invalid data');
               return;
             }
-            let newProduct: Product | null;
             try {
-              newProduct = await setProduct(
+              const newProduct: Product = await setProduct(
                 idQR,
                 name,
+                salePrice,
+                costPrice,
                 description,
                 discontinued,
                 sku
               );
+              addProduct(newProduct!);
+              console.log('Add new product');
             } catch (error) {
               console.log('Failed to add new product. Error: ', error);
               throw error;
             }
-            addProduct(newProduct!);
-            console.log('Add new product');
           }}
         >
           <Text style={styles.saveButtonText}>Guardar</Text>

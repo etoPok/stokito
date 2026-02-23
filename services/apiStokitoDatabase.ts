@@ -4,6 +4,8 @@ interface StokitoDatabase {
   addProduct(
     id: string,
     name: string,
+    salePrice: number,
+    costPrice: number,
     description: string,
     isDiscontinued: boolean,
     createdAt: string,
@@ -28,12 +30,25 @@ interface StokitoDatabase {
     stock: number,
     created_at: string
   ): Promise<number>;
+
+  addSale(id: string, date: string, total: number): Promise<string>;
+  addProductToSale(
+    id: string,
+    productId: string,
+    saleId: string,
+    productName: string,
+    price: number,
+    subtotal: number,
+    quantity: number
+  ): Promise<string>;
 }
 
 class ApiStokitoDatabase implements StokitoDatabase {
   async addProduct(
     id: string,
     name: string,
+    salePrice: number,
+    costPrice: number,
     description: string,
     isDiscontinued: boolean,
     createdAt: string,
@@ -44,10 +59,19 @@ class ApiStokitoDatabase implements StokitoDatabase {
     // result -> resusable SQL statment
     const result = await db.runAsync(
       `
-        INSERT INTO product_definition (id, name, sku, description, is_discontinued, created_at)
-        VALUES (?, ?, ?, ?, ?, ?);
+        INSERT INTO product_definition (id, name, sale_price, cost_price, sku, description, is_discontinued, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?);
       `,
-      [id, name, sku, description, Number(isDiscontinued), createdAt]
+      [
+        id,
+        name,
+        salePrice,
+        costPrice,
+        sku,
+        description,
+        Number(isDiscontinued),
+        createdAt,
+      ]
     );
     if (result.changes !== 1) {
       throw new Error('Unexpected number of affected rows during insertion');
@@ -173,6 +197,44 @@ class ApiStokitoDatabase implements StokitoDatabase {
       [inventoryId, productId, stock, created_at]
     );
     return result.lastInsertRowId;
+  }
+
+  async addSale(id: string, date: string, total: number): Promise<string> {
+    const db = (await DB.getInstance('')).connection;
+    const result = await db.runAsync(
+      `
+      INSERT INTO sale (id, date, total)
+      VALUES (?, ?, ?);
+    `,
+      [id, date, total]
+    );
+    if (result.changes !== 1) {
+      throw new Error('Unexpected number of affected rows during insertion');
+    }
+    return id;
+  }
+
+  async addProductToSale(
+    id: string,
+    productId: string,
+    saleId: string,
+    productName: string,
+    price: number,
+    subtotal: number,
+    quantity: number
+  ): Promise<string> {
+    const db = (await DB.getInstance('')).connection;
+    const result = await db.runAsync(
+      `
+      INSERT INTO sale_product (id, product_definition_id, sale_id, product_name, price, quantity, subtotal)
+      VALUES (?, ?, ?, ?, ?, ?, ?);
+    `,
+      [id, productId, saleId, productName, price, quantity, subtotal]
+    );
+    if (result.changes !== 1) {
+      throw new Error('Unexpected number of affected rows during insertion');
+    }
+    return id;
   }
 }
 

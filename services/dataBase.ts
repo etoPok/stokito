@@ -30,6 +30,8 @@ class Database {
         sku TEXT UNIQUE,
         description TEXT,
         is_discontinued INTEGER DEFAULT 0,
+        sale_price INTEGER NOT NULL,
+        cost_price INTEGER NOT NULL,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -43,7 +45,7 @@ class Database {
       CREATE TABLE IF NOT EXISTS inventory_item (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         inventory_id INTEGER NOT NULL,
-        product_definition_id INTEGER NOT NULL,
+        product_definition_id TEXT NOT NULL,
         stock INTEGER NOT NULL DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
 
@@ -54,6 +56,24 @@ class Database {
           REFERENCES product_definition(id) ON DELETE CASCADE,
 
         UNIQUE (inventory_id, product_definition_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS sale (
+        id TEXT PRIMARY KEY,
+        date TEXT DEFAULT CURRENT_TIMESTAMP,
+        total INTEGER NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS sale_product (
+        id TEXT PRIMARY KEY,
+        product_definition_id TEXT NOT NULL,
+        sale_id TEXT NOT NULL,
+        product_name TEXT NOT NULL,
+        price INTEGER NOT NULL,
+        quantity INTEGER NOT NULL,
+        subtotal INTEGER NOT NULL,
+
+        UNIQUE (product_definition_id, sale_id)
       );
     `);
   }
