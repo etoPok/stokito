@@ -71,7 +71,7 @@ export async function findProduct(id: string): Promise<Product> {
   return product;
 }
 
-export async function removeProduct(id: number): Promise<boolean> {
+export async function removeProduct(id: string): Promise<boolean> {
   const changes = await stokitoDB.removeProduct(id);
   return changes === 1;
 }

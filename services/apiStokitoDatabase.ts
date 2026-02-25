@@ -11,7 +11,7 @@ interface StokitoDatabase {
     createdAt: string,
     sku: string | null
   ): Promise<string>;
-  removeProduct(id: number): Promise<number>;
+  removeProduct(id: string): Promise<number>;
   findProduct(id: string): Promise<any>;
   getAllProducts(): Promise<any[]>;
 
@@ -80,7 +80,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     return id;
   }
 
-  async removeProduct(id: number): Promise<number> {
+  async removeProduct(id: string): Promise<number> {
     const db = (await DB.getInstance('')).connection;
     const result = await db.runAsync(
       `
