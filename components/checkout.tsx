@@ -25,7 +25,7 @@ export function Checkout() {
   function getSaleDetail(): SaleDatail {
     // check if the product already has an existing sale detail
     const foundSaleDatail = saleDetails.find((sd) => {
-      return sd.productId === scannedProduct!.id;
+      return sd.productName === scannedProduct!.name;
     });
 
     if (foundSaleDatail != null) {
@@ -40,7 +40,6 @@ export function Checkout() {
       const newSaleDetail = new SaleDatail(
         uuidv4(),
         initializedSaleId.current,
-        scannedProduct.id,
         scannedProduct.name,
         0,
         0,
@@ -51,14 +50,13 @@ export function Checkout() {
     }
 
     // check if the same product is being scanned to modify the current sale detail
-    if (currentSaleDatail.current!.productId === scannedProduct!.id)
+    if (currentSaleDatail.current!.productName === scannedProduct!.name)
       return currentSaleDatail.current!;
 
     // new scanned product
     const newSaleDetail = new SaleDatail(
       uuidv4(),
       initializedSaleId.current!,
-      scannedProduct!.id,
       scannedProduct!.name,
       0,
       0,

@@ -181,31 +181,21 @@ export async function getAllSales(): Promise<Sale[]> {
 
 // SALE PRODUCT
 
-export async function addProductToSale(
+export async function addSaleDetail(
   id: string,
-  productId: string,
   saleId: string,
   productName: string,
   price: number,
   quantity: number,
   subtotal: number
 ): Promise<SaleDatail> {
-  await stokitoDB.addProductToSale(
+  await stokitoDB.addSaleDetail(
     id,
-    productId,
     saleId,
     productName,
     price,
     subtotal,
     quantity
   );
-  return new SaleDatail(
-    id,
-    saleId,
-    productId,
-    productName,
-    price,
-    subtotal,
-    quantity
-  );
+  return new SaleDatail(id, saleId, productName, price, subtotal, quantity);
 }

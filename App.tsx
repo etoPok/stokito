@@ -13,14 +13,16 @@ export default function App() {
   const [dbReady, setDbReady] = useState(false);
 
   useEffect(() => {
-    try {
-      DB.getInstance('stokito').then(() => {
+    const initDatabase = async () => {
+      try {
+        await DB.getInstance('stokito');
         setDbReady(true);
-      });
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
+    };
+    initDatabase();
   }, []);
 
   if (!dbReady) {

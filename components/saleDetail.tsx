@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useSaleDetails } from '../hooks/saleDetailsContext';
 import { SaleDatail } from '../domain/saleDetails';
 import { useTypedRoute } from '../types';
-import { addSale } from '../services/repositories';
+import { addSale, addSaleDetail } from '../services/repositories';
 
 export function SaleDetail() {
   const insets = useSafeAreaInsets();
@@ -20,6 +20,20 @@ export function SaleDetail() {
     return total;
   }
 
+  async function addSaleDetailsToDataBase(): Promise<void> {
+    for (const sd of saleDetails) {
+      if (sd.saleId === route.params.saleId) {
+        await addSaleDetail(
+          sd.id,
+          route.params.saleId,
+          sd.productName,
+          sd.price,
+          sd.quantity,
+          sd.subtotal
+        );
+      }
+    }
+  }
   const renderItem = ({ item }: { item: SaleDatail }) => (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -78,6 +92,7 @@ export function SaleDetail() {
               const date = new Date().toISOString();
               try {
                 await addSale(route.params.saleId, date, getTotal());
+                await addSaleDetailsToDataBase();
                 navigation.goBack();
                 setSaleDetails([]);
               } catch (error) {

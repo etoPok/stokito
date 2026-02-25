@@ -74,9 +74,7 @@ class Database {
         is_voided INTEGER NOT NULL DEFAULT 0,
 
         FOREIGN KEY (sale_id)
-          REFERENCES sale(id) ON DELETE CASCADE,
-
-        UNIQUE (product_definition_id, sale_id)
+          REFERENCES sale(id) ON DELETE CASCADE
       );
     `);
   }

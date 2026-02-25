@@ -56,20 +56,19 @@ export function Home() {
   const { setProducts } = useProducts();
   const { setInventories } = useInventories();
   useEffect(() => {
-    console.log('effect start');
-    let active = true;
-    getAllInventories().then((inventories) => {
-      console.log('query resolved inventories', active);
-      if (active) setInventories(inventories);
-    });
-    getAllProducts().then((products) => {
-      console.log('query resolved products', active);
-      if (active) setProducts(products);
-    });
-    return () => {
-      console.log('cleanup');
-      active = false;
+    const getData = async () => {
+      try {
+        const inventories = await getAllInventories();
+        console.log('query resolved inventories');
+        setInventories(inventories);
+        const products = await getAllProducts();
+        console.log('query resolved products');
+        setProducts(products);
+      } catch (error) {
+        console.log(error);
+      }
     };
+    getData();
   }, []);
 
   return (
