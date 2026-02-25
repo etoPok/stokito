@@ -3,11 +3,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useSaleDetails } from '../hooks/saleDetailsContext';
 import { SaleDatail } from '../domain/saleDetails';
+import { useTypedRoute } from '../types';
+import { addSale } from '../services/repositories';
 
 export function SaleDetail() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const route = useTypedRoute<'SaleDetail'>();
   const { saleDetails, setSaleDetails } = useSaleDetails();
+
+  function getTotal(): number {
+    let total = 0;
+    saleDetails.forEach((sd) => {
+      if (sd.saleId === route.params.saleId) total += sd.subtotal;
+    });
+    return total;
+  }
 
   const renderItem = ({ item }: { item: SaleDatail }) => (
     <View style={styles.card}>
@@ -63,9 +74,15 @@ export function SaleDetail() {
         <View style={styles.footer}>
           <Pressable
             style={styles.saveButton}
-            onPress={() => {
-              navigation.goBack();
-              setSaleDetails([]);
+            onPress={async () => {
+              const date = new Date().toISOString();
+              try {
+                await addSale(route.params.saleId, date, getTotal());
+                navigation.goBack();
+                setSaleDetails([]);
+              } catch (error) {
+                console.log(error);
+              }
             }}
           >
             <Text style={styles.saveButtonText}>Terminar Venta</Text>

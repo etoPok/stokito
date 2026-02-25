@@ -1,20 +1,23 @@
 import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
 
 import { CardButton } from './cardButton';
-import { RootStackParamList, HomeNavigationProp } from '../types';
+import { RootStackParamList, useTypedNavigation } from '../types';
 import { useEffect } from 'react';
 import { useInventories } from '../hooks/inventoryContext';
 import { useProducts } from '../hooks/productContext';
 import { getAllInventories, getAllProducts } from '../services/repositories';
 
+// discriminated union
 type OptionItem = {
-  id: string;
-  title: string;
-  image: any;
-  route: keyof RootStackParamList;
-};
+  [K in keyof RootStackParamList]: {
+    id: string;
+    title: string;
+    image: any;
+    route: K;
+    params: RootStackParamList[K];
+  };
+}[keyof RootStackParamList];
 
 const options: OptionItem[] = [
   {
@@ -22,24 +25,34 @@ const options: OptionItem[] = [
     title: 'Inventarios',
     image: require('../assets/favicon.png'),
     route: 'Inventory',
+    params: undefined,
   },
   {
     id: '2',
     title: 'Productos',
     image: require('../assets/favicon.png'),
     route: 'Products',
+    params: undefined,
   },
   {
     id: '3',
     title: 'Caja',
     image: require('../assets/favicon.png'),
     route: 'Checkout',
+    params: undefined,
+  },
+  {
+    id: '4',
+    title: 'Ventas',
+    image: require('../assets/favicon.png'),
+    route: 'Sales',
+    params: undefined,
   },
 ];
 
 export function Home() {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<HomeNavigationProp>();
+  const navigation = useTypedNavigation<'Home'>();
   const { setProducts } = useProducts();
   const { setInventories } = useInventories();
   useEffect(() => {
@@ -79,7 +92,11 @@ export function Home() {
             title={item.title}
             imageSource={item.image}
             onPress={() => {
-              navigation.navigate(item.route);
+              if (item.params === undefined) {
+                navigation.navigate(item.route);
+              } else {
+                navigation.navigate(item.route, item.params);
+              }
             }}
           />
         )}

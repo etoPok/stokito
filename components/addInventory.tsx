@@ -1,15 +1,14 @@
 import { Text, View, StyleSheet, TextInput, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { HomeNavigationProp } from '../types';
 import { setInventory } from '../services/repositories';
 import { useInventories } from '../hooks/inventoryContext';
+import { useTypedNavigation } from '../types';
 
 let name: string | null = null;
 let location: string | null = null;
 
 export function AddInventory() {
-  const navigation = useNavigation<HomeNavigationProp>();
+  const navigation = useTypedNavigation<'AddInventory'>();
   const insets = useSafeAreaInsets();
   const { addInventory } = useInventories();
 

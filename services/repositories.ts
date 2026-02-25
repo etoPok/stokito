@@ -157,11 +157,26 @@ export async function addProductToInventory(
 
 // SALE
 
-export async function addSale(id: string, total: number): Promise<Sale> {
-  const date = new Date().toISOString();
+export async function addSale(
+  id: string,
+  date: string,
+  total: number
+): Promise<Sale> {
   const resultId = await stokitoDB.addSale(id, date, total);
   const sale = new Sale(resultId, date, total);
   return sale;
+}
+
+export async function getAllSales(): Promise<Sale[]> {
+  // type-unsafe
+  const rows = await stokitoDB.getAllSales();
+  const sales: Sale[] = [];
+  rows.forEach((r) => {
+    const sale = new Sale(r.id, r.date, r.total);
+    sale.setId(r.id!);
+    sales.push(sale);
+  });
+  return sales;
 }
 
 // SALE PRODUCT

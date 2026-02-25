@@ -1,14 +1,12 @@
 import { Text, View, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { HomeNavigationProp } from '../types';
+import { useTypedNavigation } from '../types';
 import { useCallback, useRef, useState } from 'react';
 import { AndroidCamera } from './camera.android';
 import { findProduct } from '../services/repositories';
 import ScannerMask from './scannerMask';
 import { SaleDatail } from '../domain/saleDetails';
 import { Product } from '../domain/product';
-import { Sale } from '../domain/sale';
 import { v4 as uuidv4 } from 'uuid';
 import { useSaleDetails } from '../hooks/saleDetailsContext';
 
@@ -17,11 +15,11 @@ const RADIUS = 20;
 
 export function Checkout() {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<HomeNavigationProp>();
+  const navigation = useTypedNavigation<'Checkout'>();
   const [scannerLocked, setScannerLocked] = useState(false);
   const { saleDetails, addSaleDetail, setSaleDetails } = useSaleDetails();
   const currentSaleDatail = useRef<SaleDatail | undefined>(undefined);
-  const sale = useRef<Sale | null>(null);
+  const initializedSaleId = useRef<string | null>(null);
   const [scannedProduct, setScannedProduct] = useState<Product | null>(null);
 
   function getSaleDetail(): SaleDatail {
@@ -37,11 +35,11 @@ export function Checkout() {
     if (
       currentSaleDatail.current == null &&
       scannedProduct != null &&
-      sale.current != null
+      initializedSaleId.current != null
     ) {
       const newSaleDetail = new SaleDatail(
         uuidv4(),
-        sale.current.id,
+        initializedSaleId.current,
         scannedProduct.id,
         scannedProduct.name,
         0,
@@ -59,7 +57,7 @@ export function Checkout() {
     // new scanned product
     const newSaleDetail = new SaleDatail(
       uuidv4(),
-      sale.current!.id,
+      initializedSaleId.current!,
       scannedProduct!.id,
       scannedProduct!.name,
       0,
@@ -72,9 +70,9 @@ export function Checkout() {
 
   function processSaleDetail() {
     if (scannedProduct == null) return;
-    if (sale.current == null) {
-      // initiaze sale
-      sale.current = new Sale(uuidv4(), new Date().toISOString(), 0);
+    if (initializedSaleId.current == null) {
+      // initiaze sale ID
+      initializedSaleId.current = uuidv4();
     }
     const sd = getSaleDetail();
     sd.price = scannedProduct.salePrice;
@@ -145,14 +143,18 @@ export function Checkout() {
         >
           <Text style={styles.buttonText}>Agregar a la cuenta</Text>
         </Pressable>
-        <Pressable
-          style={styles.button}
-          onPress={() => {
-            navigation.navigate('SaleDetail');
-          }}
-        >
-          <Text style={styles.buttonText}>Ver venta</Text>
-        </Pressable>
+        {initializedSaleId.current != null && (
+          <Pressable
+            style={styles.button}
+            onPress={() => {
+              navigation.navigate('SaleDetail', {
+                saleId: initializedSaleId.current!,
+              });
+            }}
+          >
+            <Text style={styles.buttonText}>Ver venta</Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );

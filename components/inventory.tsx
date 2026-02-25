@@ -1,16 +1,6 @@
-import {
-  Button,
-  View,
-  FlatList,
-  StyleSheet,
-  Pressable,
-  Text,
-} from 'react-native';
+import { View, FlatList, StyleSheet, Pressable, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-
 import { CardButton } from './cardButton';
-import { HomeNavigationProp } from '../types';
 import { useProducts } from '../hooks/productContext';
 import { useInventories } from '../hooks/inventoryContext';
 import { useState } from 'react';
@@ -20,10 +10,11 @@ import {
   removeInventory,
   removeProduct,
 } from '../services/repositories';
+import { useTypedNavigation } from '../types';
 
 export function Inventory() {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<HomeNavigationProp>();
+  const navigation = useTypedNavigation<'Inventory'>();
   const { products, setProducts } = useProducts();
   const { inventories, setInventories } = useInventories();
   const [deleteInventoryOpen, setDeleteInventoryOpen] = useState(false);

@@ -66,12 +66,15 @@ class Database {
 
       CREATE TABLE IF NOT EXISTS sale_product (
         id TEXT PRIMARY KEY,
-        product_definition_id TEXT NOT NULL,
         sale_id TEXT NOT NULL,
         product_name TEXT NOT NULL,
         price INTEGER NOT NULL,
         quantity INTEGER NOT NULL,
         subtotal INTEGER NOT NULL,
+        is_voided INTEGER NOT NULL DEFAULT 0,
+
+        FOREIGN KEY (sale_id)
+          REFERENCES sale(id) ON DELETE CASCADE,
 
         UNIQUE (product_definition_id, sale_id)
       );

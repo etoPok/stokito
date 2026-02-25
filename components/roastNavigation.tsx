@@ -10,6 +10,7 @@ import { AddInventory } from './addInventory';
 import { Products } from './products';
 import { AddProductDefinition } from './addProductDefinition';
 import { SaleDetail } from './saleDetail';
+import { Sales } from './sales';
 
 const RootStack = createNativeStackNavigator({
   screens: {
@@ -63,6 +64,12 @@ const RootStack = createNativeStackNavigator({
     },
     SaleDetail: {
       screen: SaleDetail,
+      options: {
+        headerShown: false,
+      },
+    },
+    Sales: {
+      screen: Sales,
       options: {
         headerShown: false,
       },

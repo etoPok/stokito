@@ -3,13 +3,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { CardButton } from './cardButton';
-import { HomeNavigationProp } from '../types';
+import { NavigationProp } from '../types';
 import { useProducts } from '../hooks/productContext';
 import { getAllProducts, removeProduct } from '../services/repositories';
 
 export function Products() {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<HomeNavigationProp>();
+  const navigation = useNavigation<NavigationProp>();
   const { products, setProducts } = useProducts();
 
   return (

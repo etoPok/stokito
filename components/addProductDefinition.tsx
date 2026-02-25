@@ -9,13 +9,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { HomeNavigationProp } from '../types';
 import { Product } from '../domain/product';
 import { useProducts } from '../hooks/productContext';
 import { setProduct } from '../services/repositories';
 import QRCode from 'react-native-qrcode-svg';
 import { v4 as uuidv4 } from 'uuid';
+import { useTypedNavigation } from '../types';
 
 let name: string | null = null;
 let description: string = '';
@@ -24,7 +23,7 @@ let salePrice: number | null = null;
 let costPrice: number | null = null;
 
 export function AddProductDefinition() {
-  const navigation = useNavigation<HomeNavigationProp>();
+  const navigation = useTypedNavigation<'AddProductDefinition'>();
   const insets = useSafeAreaInsets();
   const [discontinued, setDiscontinued] = useState(false);
   const [formatedSalePrice, setFormatedSalePrice] = useState<string>('');

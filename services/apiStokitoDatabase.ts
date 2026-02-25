@@ -32,6 +32,7 @@ interface StokitoDatabase {
   ): Promise<number>;
 
   addSale(id: string, date: string, total: number): Promise<string>;
+  getAllSales(): Promise<any[]>;
   addProductToSale(
     id: string,
     productId: string,
@@ -212,6 +213,17 @@ class ApiStokitoDatabase implements StokitoDatabase {
       throw new Error('Unexpected number of affected rows during insertion');
     }
     return id;
+  }
+
+  async getAllSales(): Promise<any[]> {
+    const db = (await DB.getInstance('')).connection;
+    const results = await db.getAllAsync(
+      `
+      SELECT id, date, total FROM sale;
+    `,
+      []
+    );
+    return results;
   }
 
   async addProductToSale(

@@ -16,4 +16,8 @@ export class Sale {
   get date(): string {
     return this._date;
   }
+
+  public setId(id: string): void {
+    this._id = id;
+  }
 }

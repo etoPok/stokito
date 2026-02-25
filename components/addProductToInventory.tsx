@@ -9,8 +9,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { HomeNavigationProp } from '../types';
 import { Product } from '../domain/product';
 import { useProducts } from '../hooks/productContext';
 import { addProductToInventory } from '../services/repositories';
@@ -18,6 +16,7 @@ import { useInventories } from '../hooks/inventoryContext';
 import Inventory from '../domain/inventory';
 import QRCode from 'react-native-qrcode-svg';
 import { v4 as uuidv4 } from 'uuid';
+import { useTypedNavigation } from '../types';
 
 let name: string | null = null;
 let sku: string | null = null;
@@ -27,7 +26,7 @@ let salePrice: number | null = null;
 let costPrice: number | null = null;
 
 export function AddProductToInventory() {
-  const navigation = useNavigation<HomeNavigationProp>();
+  const navigation = useTypedNavigation<'AddProductToInventory'>();
   const insets = useSafeAreaInsets();
   const [discontinued, setDiscontinued] = useState(false);
   const { addProduct } = useProducts();
@@ -219,7 +218,12 @@ export function AddProductToInventory() {
               {idQR !== undefined && (
                 <View style={styles.qrPreviewContainer}>
                   <View style={styles.qrBox}>
-                    <QRCode value={idQR} size={200} />
+                    <QRCode
+                      value={idQR}
+                      size={200}
+                      backgroundColor="black"
+                      color="white"
+                    />
                     <Text style={styles.qrPlaceholderText}>Vista previa</Text>
                   </View>
                 </View>
