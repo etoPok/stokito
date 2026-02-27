@@ -8,29 +8,38 @@ import {
   ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Product } from '../domain/product';
 import { useProducts } from '../hooks/productContext';
-import { setProduct } from '../services/repositories';
+import { addProductToInventory } from '../services/repositories';
+import { useInventories } from '../hooks/inventoryContext';
+import Inventory from '../domain/inventory';
 import QRCode from 'react-native-qrcode-svg';
 import { v4 as uuidv4 } from 'uuid';
 import { useTypedNavigation } from '../types';
 
 let name: string | null = null;
-let description: string = '';
 let sku: string | null = null;
+let description: string | null = null;
+let stock: number | null = null;
 let salePrice: number | null = null;
 let costPrice: number | null = null;
 
-export function AddProductDefinition() {
-  const navigation = useTypedNavigation<'AddProductDefinition'>();
+export function CreateInventoryProductScreen() {
+  const navigation = useTypedNavigation<'CreateInventoryProductScreen'>();
   const insets = useSafeAreaInsets();
   const [discontinued, setDiscontinued] = useState(false);
+  const { addProduct } = useProducts();
+
+  const { inventories } = useInventories();
+  const [inventoryOpen, setInventoryOpen] = useState(false);
   const [formatedSalePrice, setFormatedSalePrice] = useState<string>('');
   const [formatedCostPrice, setFormatedCostPrice] = useState<string>('');
-  const { addProduct } = useProducts();
-  const [idQR, setIdQR] = useState<string | undefined>(undefined);
+  const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(
+    null
+  );
 
+  const [idQR, setIdQR] = useState<string | undefined>(undefined);
   useEffect(() => {
     console.log('idQR: ', idQR);
   }, [idQR]);
@@ -134,6 +143,19 @@ export function AddProductDefinition() {
           </View>
 
           <View style={styles.field}>
+            <Text style={styles.label}>Stock</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Cantidad disponible"
+              placeholderTextColor="#777"
+              onChangeText={(value) => {
+                stock = Number(value);
+              }}
+            />
+          </View>
+
+          <View style={styles.field}>
             <Text style={styles.label}>Descripción</Text>
             <TextInput
               style={[styles.input, styles.multiline]}
@@ -152,67 +174,104 @@ export function AddProductDefinition() {
           </View>
 
           <View style={styles.field}>
-            {idQR === undefined && (
-              <Pressable
-                style={styles.qrButton}
-                onPress={() => {
-                  setIdQR(uuidv4());
-                }}
-              >
-                <Text style={styles.qrButtonText}>Generar código QR</Text>
-              </Pressable>
-            )}
-            {idQR !== undefined && (
-              <View style={styles.qrPreviewContainer}>
-                <View style={styles.qrBox}>
-                  <QRCode
-                    value={idQR}
-                    size={200}
-                    backgroundColor="black"
-                    color="white"
-                  />
-                  <Text style={styles.qrPlaceholderText}>Vista previa</Text>
-                </View>
+            <Text style={styles.label}>Inventario</Text>
+
+            <Pressable
+              style={styles.dropdownButton}
+              onPress={() => setInventoryOpen(!inventoryOpen)}
+            >
+              <Text style={styles.dropdownText}>
+                {selectedInventory
+                  ? selectedInventory.name
+                  : 'Seleccionar inventario'}
+              </Text>
+            </Pressable>
+
+            {inventoryOpen && (
+              <View style={styles.dropdown}>
+                {inventories.map((inv) => (
+                  <Pressable
+                    key={inv.id}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setSelectedInventory(inv);
+                      setInventoryOpen(false);
+                    }}
+                  >
+                    <Text style={styles.dropdownItemText}>{inv.name}</Text>
+                  </Pressable>
+                ))}
               </View>
             )}
+
+            <View style={styles.field}>
+              {idQR === undefined && (
+                <Pressable
+                  style={styles.qrButton}
+                  onPress={() => {
+                    setIdQR(uuidv4());
+                  }}
+                >
+                  <Text style={styles.qrButtonText}>Generar código QR</Text>
+                </Pressable>
+              )}
+              {idQR !== undefined && (
+                <View style={styles.qrPreviewContainer}>
+                  <View style={styles.qrBox}>
+                    <QRCode
+                      value={idQR}
+                      size={200}
+                      backgroundColor="black"
+                      color="white"
+                    />
+                    <Text style={styles.qrPlaceholderText}>Vista previa</Text>
+                  </View>
+                </View>
+              )}
+            </View>
           </View>
         </View>
-      </ScrollView>
 
-      <View style={styles.footer}>
-        <Pressable
-          style={styles.saveButton}
-          onPress={async () => {
-            if (
-              !name ||
-              idQR === undefined ||
-              salePrice == null ||
-              costPrice == null
-            ) {
-              console.log('Invalid data');
-              return;
-            }
-            try {
-              const newProduct: Product = await setProduct(
-                idQR,
-                name,
-                salePrice,
-                costPrice,
-                description,
-                discontinued,
-                sku
-              );
-              addProduct(newProduct!);
-              console.log('Add new product');
-            } catch (error) {
-              console.log('Failed to add new product. Error: ', error);
-              throw error;
-            }
-          }}
-        >
-          <Text style={styles.saveButtonText}>Guardar</Text>
-        </Pressable>
-      </View>
+        <View style={styles.footer}>
+          <Pressable
+            style={styles.saveButton}
+            onPress={async () => {
+              if (
+                !name ||
+                !description ||
+                !stock ||
+                !selectedInventory ||
+                !salePrice ||
+                !costPrice ||
+                idQR === undefined
+              ) {
+                console.log('Invalid data');
+                return;
+              }
+              try {
+                const newProduct: Product = await addProductToInventory(
+                  idQR,
+                  name,
+                  salePrice,
+                  costPrice,
+                  description,
+                  discontinued,
+                  sku,
+                  stock,
+                  selectedInventory!.id!
+                );
+                addProduct(newProduct!);
+                console.log('Add new product');
+              } catch (error) {
+                console.log('Failed to add new product');
+                throw error;
+              }
+            }}
+          >
+            <Text style={styles.saveButtonText}>Guardar</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -254,10 +313,38 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: 10,
+    marginVertical: 20,
   },
   inventoryRow: {
     marginTop: 12,
+  },
+  dropdownButton: {
+    backgroundColor: '#111',
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#222',
+    marginBottom: 12,
+  },
+  dropdownText: {
+    color: '#fff',
+  },
+  dropdown: {
+    marginTop: 8,
+    backgroundColor: '#111',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#222',
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  dropdownItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#222',
+  },
+  dropdownItemText: {
+    color: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -293,7 +380,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-
   qrButton: {
     backgroundColor: '#222',
     borderRadius: 8,
@@ -314,8 +400,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   qrBox: {
-    width: 300,
-    height: 300,
+    width: 200,
+    height: 200,
     backgroundColor: '#111',
     borderRadius: 8,
     borderWidth: 1,
@@ -323,7 +409,6 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
   },
   qrPlaceholderText: {
     marginTop: 10,

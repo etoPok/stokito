@@ -2,9 +2,9 @@ import { Text, View, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTypedNavigation } from '../types';
 import { useCallback, useRef, useState } from 'react';
-import { AndroidCamera } from './camera.android';
+import { AndroidCamera } from './../components/camera.android';
 import { findProduct } from '../services/repositories';
-import ScannerMask from './scannerMask';
+import ScannerMask from './../components/scannerMask';
 import { SaleDatail } from '../domain/saleDetails';
 import { Product } from '../domain/product';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,9 +13,9 @@ import { useSaleDetails } from '../hooks/saleDetailsContext';
 const SCAN_SIZE = 260;
 const RADIUS = 20;
 
-export function Checkout() {
+export function CheckoutScreen() {
   const insets = useSafeAreaInsets();
-  const navigation = useTypedNavigation<'Checkout'>();
+  const navigation = useTypedNavigation<'CheckoutScreen'>();
   const [scannerLocked, setScannerLocked] = useState(false);
   const { saleDetails, addSaleDetail, setSaleDetails } = useSaleDetails();
   const currentSaleDatail = useRef<SaleDatail | undefined>(undefined);
@@ -145,7 +145,7 @@ export function Checkout() {
           <Pressable
             style={styles.button}
             onPress={() => {
-              navigation.navigate('SaleDetail', {
+              navigation.navigate('ConfirmSaleScreen', {
                 saleId: initializedSaleId.current!,
               });
             }}

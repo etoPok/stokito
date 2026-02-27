@@ -1,6 +1,6 @@
 import { View, FlatList, StyleSheet, Pressable, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CardButton } from './cardButton';
+import { CardButton } from './../components/cardButton';
 import { useProducts } from '../hooks/productContext';
 import { useInventories } from '../hooks/inventoryContext';
 import { useState } from 'react';
@@ -13,13 +13,13 @@ import {
 } from '../services/repositories';
 import { useTypedNavigation } from '../types';
 import { Menu, IconButton } from 'react-native-paper';
-import { AppAccordion, appAccordionStyles } from './appAccordion';
-import DomainInventory from '../domain/inventory';
+import { AppAccordion, appAccordionStyles } from './../components/appAccordion';
+import Inventory from '../domain/inventory';
 import { Product } from '../domain/product';
 
-export function Inventory() {
+export function InventoryScreen() {
   const insets = useSafeAreaInsets();
-  const navigation = useTypedNavigation<'Inventory'>();
+  const navigation = useTypedNavigation<'InventoryScreen'>();
 
   const { setProducts } = useProducts();
   const [inventoryProducts, setInventoryProducts] = useState<Product[]>([]);
@@ -27,8 +27,9 @@ export function Inventory() {
 
   const [visible, setVisible] = useState(false);
   const [deleteInventory, setDeleteInventory] = useState<boolean>(false);
-  const [selectedInventory, setSelectedInventory] =
-    useState<DomainInventory | null>(null);
+  const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(
+    null
+  );
 
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
@@ -65,7 +66,7 @@ export function Inventory() {
           <Menu.Item
             onPress={() => {
               setVisible(false);
-              navigation.navigate('AddInventory');
+              navigation.navigate('CreateInventoryScreen');
             }}
             title="Agregar inventario"
             titleStyle={{ color: 'white' }}
@@ -73,7 +74,7 @@ export function Inventory() {
           <Menu.Item
             onPress={() => {
               setVisible(false);
-              navigation.navigate('AddProductToInventory');
+              navigation.navigate('CreateInventoryProductScreen');
             }}
             title="Agregar producto"
             titleStyle={{ color: 'white' }}

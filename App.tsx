@@ -4,11 +4,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
 import { PaperProvider } from 'react-native-paper';
 
-import Navigation from './components/roastNavigation';
-import DB from './services/dataBase';
-import { ProductProvider } from './hooks/productContext';
-import { InventoryProvider } from './hooks/inventoryContext';
-import { SaleDetailProvider } from './hooks/saleDetailsContext';
+import Navigation from './src/components/roastNavigation';
+import DB from './src/services/dataBase';
+import { ProductProvider } from './src/hooks/productContext';
+import { InventoryProvider } from './src/hooks/inventoryContext';
+import { SaleDetailProvider } from './src/hooks/saleDetailsContext';
 
 export default function App() {
   const [dbReady, setDbReady] = useState(false);

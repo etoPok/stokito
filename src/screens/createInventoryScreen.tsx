@@ -8,8 +8,8 @@ import { v4 as uuidv4 } from 'uuid';
 let name: string | null = null;
 let location: string | null = null;
 
-export function AddInventory() {
-  const navigation = useTypedNavigation<'AddInventory'>();
+export function CreateInventoryScreen() {
+  const navigation = useTypedNavigation<'CreateInventoryScreen'>();
   const insets = useSafeAreaInsets();
   const { addInventory } = useInventories();
 

@@ -6,10 +6,10 @@ import { SaleDatail } from '../domain/saleDetails';
 import { useTypedRoute } from '../types';
 import { addSale, addSaleDetail } from '../services/repositories';
 
-export function SaleDetail() {
+export function ConfirmSaleScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const route = useTypedRoute<'SaleDetail'>();
+  const route = useTypedRoute<'ConfirmSaleScreen'>();
   const { saleDetails, setSaleDetails } = useSaleDetails();
 
   function getTotal(): number {
