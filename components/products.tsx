@@ -1,15 +1,13 @@
 import { View, FlatList, StyleSheet, Pressable, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-
 import { CardButton } from './cardButton';
-import { HomeNavigationProp } from '../types';
 import { useProducts } from '../hooks/productContext';
 import { getAllProducts, removeProduct } from '../services/repositories';
+import { useTypedNavigation } from '../types';
 
 export function Products() {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<HomeNavigationProp>();
+  const navigation = useTypedNavigation<'Products'>();
   const { products, setProducts } = useProducts();
 
   return (

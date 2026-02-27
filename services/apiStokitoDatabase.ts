@@ -2,58 +2,86 @@ import DB from '../services/dataBase';
 
 interface StokitoDatabase {
   addProduct(
+    id: string,
     name: string,
+    salePrice: number,
+    costPrice: number,
     description: string,
     isDiscontinued: boolean,
     createdAt: string,
     sku: string | null
-  ): Promise<number>;
-  removeProduct(id: number): Promise<number>;
-  findProduct(id: number): Promise<any>;
+  ): Promise<string>;
+  removeProduct(id: string): Promise<number>;
+  findProduct(id: string): Promise<any>;
   getAllProducts(): Promise<any[]>;
 
   addInventory(
+    id: string,
     name: string,
     location: string,
     createdAt: string
-  ): Promise<number>;
-  removeInventory(id: number): Promise<number>;
+  ): Promise<string>;
+  removeInventory(id: string): Promise<number>;
   findInventory(id: number): Promise<any>;
   getAllInventories(): Promise<any[]>;
 
   addProductToInventory(
-    productId: number,
-    inventoryId: number,
+    productId: string,
+    inventoryId: string,
     stock: number,
     created_at: string
   ): Promise<number>;
+  getInventoryProducts(inventoryId: string): Promise<any[]>;
+
+  addSale(id: string, date: string, total: number): Promise<string>;
+  getAllSales(): Promise<any[]>;
+  addSaleDetail(
+    id: string,
+    saleId: string,
+    productName: string,
+    price: number,
+    subtotal: number,
+    quantity: number
+  ): Promise<string>;
 }
 
 class ApiStokitoDatabase implements StokitoDatabase {
   async addProduct(
+    id: string,
     name: string,
+    salePrice: number,
+    costPrice: number,
     description: string,
     isDiscontinued: boolean,
     createdAt: string,
     sku: string | null
-  ): Promise<number> {
+  ): Promise<string> {
     const db = (await DB.getInstance('')).connection;
     // Using throw makes the async function return a rejected promise which is then handled by a try-catch.
     // result -> resusable SQL statment
     const result = await db.runAsync(
       `
-        INSERT INTO product_definition (name, sku, description, is_discontinued, created_at)
-        VALUES (?, ?, ?, ?, ?);
+        INSERT INTO product_definition (id, name, sale_price, cost_price, sku, description, is_discontinued, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?);
       `,
-      [name, sku, description, Number(isDiscontinued), createdAt]
+      [
+        id,
+        name,
+        salePrice,
+        costPrice,
+        sku,
+        description,
+        Number(isDiscontinued),
+        createdAt,
+      ]
     );
     if (result.changes !== 1) {
       throw new Error('Unexpected number of affected rows during insertion');
     }
-    return result.lastInsertRowId;
+    return id;
   }
 
-  async removeProduct(id: number): Promise<number> {
+  async removeProduct(id: string): Promise<number> {
     const db = (await DB.getInstance('')).connection;
     const result = await db.runAsync(
       `
@@ -70,7 +98,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     return result.changes;
   }
 
-  async findProduct(id: number): Promise<any> {
+  async findProduct(id: string): Promise<any> {
     const db = (await DB.getInstance('')).connection;
     const row = await db.getFirstAsync(
       `
@@ -79,7 +107,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
       [id]
     );
     if (!row) {
-      throw new Error('Row not found for id ${id}');
+      throw new Error(`Row not found for id ${id}`);
     }
     return row;
   }
@@ -96,25 +124,26 @@ class ApiStokitoDatabase implements StokitoDatabase {
   }
 
   async addInventory(
+    id: string,
     name: string,
     location: string,
     createdAt: string
-  ): Promise<number> {
+  ): Promise<string> {
     const db = (await DB.getInstance('')).connection;
     const result = await db.runAsync(
       `
-      INSERT INTO inventory (name, location, created_at)
-      VALUES (?, ?, ?);
+      INSERT INTO inventory (id, name, location, created_at)
+      VALUES (?, ?, ?, ?);
     `,
-      [name, location, createdAt]
+      [id, name, location, createdAt]
     );
     if (result.changes !== 1) {
       throw new Error('Unexpected number of affected rows during insertion');
     }
-    return result.lastInsertRowId;
+    return id;
   }
 
-  async removeInventory(id: number): Promise<number> {
+  async removeInventory(id: string): Promise<number> {
     const db = (await DB.getInstance('')).connection;
     const result = await db.runAsync(
       `
@@ -157,8 +186,8 @@ class ApiStokitoDatabase implements StokitoDatabase {
   }
 
   async addProductToInventory(
-    productId: number,
-    inventoryId: number,
+    productId: string,
+    inventoryId: string,
     stock: number,
     created_at: string
   ): Promise<number> {
@@ -171,6 +200,75 @@ class ApiStokitoDatabase implements StokitoDatabase {
       [inventoryId, productId, stock, created_at]
     );
     return result.lastInsertRowId;
+  }
+
+  async getInventoryProducts(inventoryId: string): Promise<any[]> {
+    const db = (await DB.getInstance('')).connection;
+    const rows = await db.getAllAsync(
+      `
+      SELECT
+        pd.id,
+        pd.name,
+        pd.sku,
+        pd.sale_price,
+        pd.cost_price,
+        pd.is_discontinued
+      FROM inventory_item ii
+      jOIN product_definition pd
+        ON pd.id = ii.product_definition_id
+      WHERE ii.inventory_id = ?;
+    `,
+      [inventoryId]
+    );
+    return rows;
+  }
+
+  async addSale(id: string, date: string, total: number): Promise<string> {
+    const db = (await DB.getInstance('')).connection;
+    const result = await db.runAsync(
+      `
+      INSERT INTO sale (id, date, total)
+      VALUES (?, ?, ?);
+    `,
+      [id, date, total]
+    );
+    if (result.changes !== 1) {
+      throw new Error('Unexpected number of affected rows during insertion');
+    }
+    return id;
+  }
+
+  async getAllSales(): Promise<any[]> {
+    const db = (await DB.getInstance('')).connection;
+    const results = await db.getAllAsync(
+      `
+      SELECT id, date, total FROM sale;
+    `,
+      []
+    );
+    return results;
+  }
+
+  async addSaleDetail(
+    id: string,
+    saleId: string,
+    productName: string,
+    price: number,
+    subtotal: number,
+    quantity: number
+  ): Promise<string> {
+    const db = (await DB.getInstance('')).connection;
+    const result = await db.runAsync(
+      `
+      INSERT INTO sale_product (id, sale_id, product_name, price, quantity, subtotal)
+      VALUES (?, ?, ?, ?, ?, ?);
+    `,
+      [id, saleId, productName, price, quantity, subtotal]
+    );
+    if (result.changes !== 1) {
+      throw new Error('Unexpected number of affected rows during insertion');
+    }
+    return id;
   }
 }
 

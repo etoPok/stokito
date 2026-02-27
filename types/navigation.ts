@@ -1,8 +1,8 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 
 export type RootStackParamList = {
   Home: undefined;
-  Sell: undefined;
   Inventory: undefined;
   Refund: undefined;
   Checkout: undefined;
@@ -10,6 +10,22 @@ export type RootStackParamList = {
   AddProductDefinition: undefined;
   AddInventory: undefined;
   Products: undefined;
+  SaleDetail: { saleId: string };
+  Sales: undefined;
 };
 
-export type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+export type ScreenNavigation<T extends keyof RootStackParamList> =
+  NativeStackNavigationProp<RootStackParamList, T>;
+
+export type ScreenRoute<T extends keyof RootStackParamList> = RouteProp<
+  RootStackParamList,
+  T
+>;
+
+export function useTypedNavigation<T extends keyof RootStackParamList>() {
+  return useNavigation<ScreenNavigation<T>>();
+}
+
+export function useTypedRoute<T extends keyof RootStackParamList>() {
+  return useRoute<ScreenRoute<T>>();
+}
