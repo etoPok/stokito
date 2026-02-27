@@ -2,16 +2,16 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 
 export type RootStackParamList = {
-  Home: undefined;
-  Inventory: undefined;
-  Refund: undefined;
-  Checkout: undefined;
-  AddProductToInventory: undefined;
-  AddProductDefinition: undefined;
-  AddInventory: undefined;
-  Products: undefined;
-  SaleDetail: { saleId: string };
-  Sales: undefined;
+  HomeScreen: undefined;
+  InventoryScreen: undefined;
+  RefundScreen: undefined;
+  CheckoutScreen: undefined;
+  CreateInventoryProductScreen: undefined;
+  CreateProductDefinitionScreen: undefined;
+  CreateInventoryScreen: undefined;
+  ProductsScreen: undefined;
+  ConfirmSaleScreen: { saleId: string };
+  SalesScreen: undefined;
 };
 
 export type ScreenNavigation<T extends keyof RootStackParamList> =

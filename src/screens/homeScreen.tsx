@@ -1,7 +1,7 @@
 import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CardButton } from './cardButton';
+import { CardButton } from './../components/cardButton';
 import { RootStackParamList, useTypedNavigation } from '../types';
 import { useEffect } from 'react';
 import { useInventories } from '../hooks/inventoryContext';
@@ -24,35 +24,35 @@ const options: OptionItem[] = [
     id: '1',
     title: 'Inventarios',
     image: require('../assets/favicon.png'),
-    route: 'Inventory',
+    route: 'InventoryScreen',
     params: undefined,
   },
   {
     id: '2',
     title: 'Productos',
     image: require('../assets/favicon.png'),
-    route: 'Products',
+    route: 'ProductsScreen',
     params: undefined,
   },
   {
     id: '3',
     title: 'Caja',
     image: require('../assets/favicon.png'),
-    route: 'Checkout',
+    route: 'CheckoutScreen',
     params: undefined,
   },
   {
     id: '4',
     title: 'Ventas',
     image: require('../assets/favicon.png'),
-    route: 'Sales',
+    route: 'SalesScreen',
     params: undefined,
   },
 ];
 
-export function Home() {
+export function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const navigation = useTypedNavigation<'Home'>();
+  const navigation = useTypedNavigation<'HomeScreen'>();
   const { setProducts } = useProducts();
   const { setInventories } = useInventories();
   useEffect(() => {

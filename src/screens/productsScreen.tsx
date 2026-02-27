@@ -1,13 +1,13 @@
 import { View, FlatList, StyleSheet, Pressable, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CardButton } from './cardButton';
+import { CardButton } from './../components/cardButton';
 import { useProducts } from '../hooks/productContext';
 import { getAllProducts, removeProduct } from '../services/repositories';
 import { useTypedNavigation } from '../types';
 
-export function Products() {
+export function ProductsScreen() {
   const insets = useSafeAreaInsets();
-  const navigation = useTypedNavigation<'Products'>();
+  const navigation = useTypedNavigation<'ProductsScreen'>();
   const { products, setProducts } = useProducts();
 
   return (
@@ -37,7 +37,7 @@ export function Products() {
       <View style={styles.actionsContainer}>
         <Pressable
           style={styles.secondaryAction}
-          onPress={() => navigation.navigate('AddProductDefinition')}
+          onPress={() => navigation.navigate('CreateProductDefinitionScreen')}
         >
           <Text style={styles.secondaryActionText}>Agregar producto</Text>
         </Pressable>

@@ -4,15 +4,16 @@ import { useNavigation } from '@react-navigation/native';
 import { Sale } from '../domain/sale';
 import { useEffect, useState } from 'react';
 import { getAllSales } from '../services/repositories';
+import { useTypedNavigation } from '../types';
 
 const dateFormater = Intl.DateTimeFormat('es-Es', {
   dateStyle: 'short',
   timeStyle: 'short',
 });
 
-export function Sales() {
+export function SalesScreen() {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
+  const navigation = useTypedNavigation<'SalesScreen'>();
   const [sales, setSales] = useState<Sale[]>([]);
 
   useEffect(() => {
