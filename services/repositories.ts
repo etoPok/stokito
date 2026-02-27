@@ -79,37 +79,39 @@ export async function removeProduct(id: string): Promise<boolean> {
 // INVENTORY
 
 export async function setInventory(
+  id: string,
   name: string,
   location: string
 ): Promise<Inventory> {
-  const inventory = new Inventory(name, location);
-  const resultId = await stokitoDB.addInventory(
-    inventory.name,
-    inventory.location,
-    inventory.createdAt
-  );
+  const date = new Date().toISOString();
+  const resultId = await stokitoDB.addInventory(id, name, location, date);
+  const inventory = new Inventory(id, name, location, date);
   inventory.setId(resultId);
   return inventory;
 }
 export async function getAllInventories(): Promise<Inventory[]> {
   // type-unsafe
-  const rows = (await stokitoDB.getAllInventories()) as Inventory[];
+  const rows = await stokitoDB.getAllInventories();
   const inventories: Inventory[] = [];
   rows.forEach((r) => {
-    const inventory = new Inventory(r.name, r.location);
-    inventory.setId(r.id!);
+    const inventory = new Inventory(r.id, r.name, r.location, r.created_at);
     inventories.push(inventory);
   });
   return inventories;
 }
 
 export async function findInventory(id: number): Promise<Inventory> {
-  const row = (await stokitoDB.findInventory(id)) as Inventory;
-  const inventory = new Inventory(row.name, row.location);
+  const row = await stokitoDB.findInventory(id);
+  const inventory = new Inventory(
+    row.id,
+    row.name,
+    row.location,
+    row.created_at
+  );
   return inventory;
 }
 
-export async function removeInventory(id: number): Promise<boolean> {
+export async function removeInventory(id: string): Promise<boolean> {
   const changes = await stokitoDB.removeInventory(id);
   return changes === 1;
 }
@@ -117,7 +119,7 @@ export async function removeInventory(id: number): Promise<boolean> {
 // INVENTORY ITEM
 
 async function setInventoryItem(
-  inventoryId: number,
+  inventoryId: string,
   productId: string,
   stock: number
 ): Promise<number | null> {
@@ -140,7 +142,7 @@ export async function addProductToInventory(
   isDiscontinued: boolean,
   sku: string | null,
   stock: number,
-  inventoryId: number
+  inventoryId: string
 ): Promise<Product> {
   const product = await setProduct(
     id,
@@ -153,6 +155,27 @@ export async function addProductToInventory(
   );
   await setInventoryItem(inventoryId, product.id, stock);
   return product;
+}
+
+export async function getInventoryProducts(
+  inventoryId: string
+): Promise<Product[]> {
+  const rows: any[] = await stokitoDB.getInventoryProducts(inventoryId);
+  const products: Product[] = [];
+  rows.forEach((r) => {
+    products.push(
+      new Product(
+        r.id,
+        r.name,
+        r.sale_price,
+        r.cost_price,
+        r.description,
+        r.is_discontinued,
+        r.sku
+      )
+    );
+  });
+  return products;
 }
 
 // SALE

@@ -7,17 +7,31 @@ import { useState } from 'react';
 import {
   getAllInventories,
   getAllProducts,
+  getInventoryProducts,
   removeInventory,
   removeProduct,
 } from '../services/repositories';
 import { useTypedNavigation } from '../types';
+import { Menu, IconButton } from 'react-native-paper';
+import { AppAccordion, appAccordionStyles } from './appAccordion';
+import DomainInventory from '../domain/inventory';
+import { Product } from '../domain/product';
 
 export function Inventory() {
   const insets = useSafeAreaInsets();
   const navigation = useTypedNavigation<'Inventory'>();
-  const { products, setProducts } = useProducts();
+
+  const { setProducts } = useProducts();
+  const [inventoryProducts, setInventoryProducts] = useState<Product[]>([]);
   const { inventories, setInventories } = useInventories();
-  const [deleteInventoryOpen, setDeleteInventoryOpen] = useState(false);
+
+  const [visible, setVisible] = useState(false);
+  const [deleteInventory, setDeleteInventory] = useState<boolean>(false);
+  const [selectedInventory, setSelectedInventory] =
+    useState<DomainInventory | null>(null);
+
+  const openMenu = () => setVisible(true);
+  const closeMenu = () => setVisible(false);
 
   return (
     <View
@@ -40,68 +54,130 @@ export function Inventory() {
 
         <Text style={styles.headerTitle}>Inventario</Text>
 
-        <View style={{ width: 60 }} />
-      </View>
-
-      <View style={styles.actionsContainer}>
-        <Pressable
-          style={styles.secondaryAction}
-          onPress={() => navigation.navigate('AddInventory')}
+        <Menu
+          visible={visible}
+          onDismiss={closeMenu}
+          anchor={
+            <IconButton icon="dots-horizontal" size={24} onPress={openMenu} />
+          }
+          contentStyle={{ backgroundColor: 'black' }}
         >
-          <Text style={styles.secondaryActionText}>+ Nuevo inventario</Text>
-        </Pressable>
-
-        {inventories.length > 0 && (
-          <Pressable
-            style={styles.secondaryAction}
+          <Menu.Item
             onPress={() => {
-              setDeleteInventoryOpen(!deleteInventoryOpen);
+              setVisible(false);
+              navigation.navigate('AddInventory');
             }}
-          >
-            <Text style={styles.secondaryActionText}>Eliminar inventario</Text>
-          </Pressable>
-        )}
-
-        {inventories.length > 0 && deleteInventoryOpen && (
-          <View style={styles.dropdown}>
-            {inventories.map((inv) => (
-              <Pressable
-                key={inv.id}
-                style={styles.dropdownItem}
-                onPress={async () => {
-                  try {
-                    const deleted = await removeInventory(inv.id!);
-                    if (deleted) {
-                      console.log('Remove inventory');
-                    }
-                    const newInventories = await getAllInventories();
-                    setInventories(newInventories);
-                    setDeleteInventoryOpen(false);
-                  } catch (error) {
-                    console.log('Failed to remove inventory');
-                    throw error;
-                  }
-                }}
-              >
-                <Text style={styles.dropdownItemText}>{inv.name}</Text>
-              </Pressable>
-            ))}
-          </View>
-        )}
-
-        {inventories.length > 0 && (
-          <Pressable
-            style={styles.secondaryAction}
-            onPress={() => navigation.navigate('AddProductToInventory')}
-          >
-            <Text style={styles.secondaryActionText}>Agregar producto</Text>
-          </Pressable>
-        )}
+            title="Agregar inventario"
+            titleStyle={{ color: 'white' }}
+          />
+          <Menu.Item
+            onPress={() => {
+              setVisible(false);
+              navigation.navigate('AddProductToInventory');
+            }}
+            title="Agregar producto"
+            titleStyle={{ color: 'white' }}
+          />
+          <Menu.Item
+            onPress={() => {
+              setDeleteInventory(true);
+              setVisible(false);
+            }}
+            title="Eliminar inventario"
+            titleStyle={{ color: 'white' }}
+          />
+        </Menu>
       </View>
+
+      {!deleteInventory ? (
+        <AppAccordion
+          buttonContainerStyle={appAccordionStyles.buttonContainer}
+          buttonStyle={appAccordionStyles.button}
+          titleStyle={appAccordionStyles.buttonText}
+          title={
+            selectedInventory != null
+              ? selectedInventory.name
+              : 'Seleccionar Inventario'
+          }
+        >
+          {({ sendExpandedValue }) => (
+            <View style={appAccordionStyles.dropdown}>
+              {inventories.map((inv, index) => (
+                <Pressable
+                  style={appAccordionStyles.item}
+                  key={index}
+                  onPress={async () => {
+                    try {
+                      const productsObtained = await getInventoryProducts(
+                        inv.id
+                      );
+                      setInventoryProducts(productsObtained);
+                      setSelectedInventory(inv);
+                      sendExpandedValue(false);
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  }}
+                >
+                  <Text style={appAccordionStyles.itemText}>{inv.name}</Text>
+                  <Text style={appAccordionStyles.itemDetailText}>
+                    {inv.location}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </AppAccordion>
+      ) : (
+        <AppAccordion
+          buttonContainerStyle={appAccordionStyles.buttonContainer}
+          buttonStyle={appAccordionStyles.button}
+          titleStyle={[appAccordionStyles.buttonText, { color: 'red' }]}
+          title="Cancelar eliminación"
+          onPress={() => setDeleteInventory(false)}
+          expand={deleteInventory}
+        >
+          {({ sendExpandedValue }) => (
+            <View style={appAccordionStyles.dropdown}>
+              {inventories.map((inv, index) => (
+                <View
+                  key={index}
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <View>
+                    <Text style={appAccordionStyles.itemText}>{inv.name}</Text>
+                    <Text style={appAccordionStyles.itemDetailText}>
+                      {inv.location}
+                    </Text>
+                  </View>
+                  <IconButton
+                    icon={'delete'}
+                    onPress={async () => {
+                      try {
+                        await removeInventory(inv.id);
+                        const newInventories = await getAllInventories();
+                        setInventories(newInventories);
+                        setDeleteInventory(false);
+                        setSelectedInventory(null);
+                        sendExpandedValue(false);
+                      } catch (error) {
+                        console.log(error);
+                      }
+                    }}
+                  ></IconButton>
+                </View>
+              ))}
+            </View>
+          )}
+        </AppAccordion>
+      )}
 
       <FlatList
         contentContainerStyle={styles.listContent}
-        data={products}
+        data={inventoryProducts}
         keyExtractor={(item) => (item.sku != null ? item.sku : item.name)}
         numColumns={2}
         columnWrapperStyle={{ justifyContent: 'space-between' }}
@@ -117,10 +193,7 @@ export function Inventory() {
                 style={styles.deleteProduct}
                 onPress={async () => {
                   try {
-                    const deleted = await removeProduct(item.id!);
-                    if (deleted) {
-                      console.log('Remove product');
-                    }
+                    await removeProduct(item.id!);
                     const newProducts = await getAllProducts();
                     setProducts(newProducts);
                   } catch (error) {
@@ -166,20 +239,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 14,
   },
-  secondaryAction: {
-    backgroundColor: '#1A1D24',
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#2A2F3A',
-    marginBottom: 10,
-  },
-  secondaryActionText: {
-    color: '#D1D5DB',
-    fontSize: 15,
-    fontWeight: '500',
-  },
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 8,
@@ -212,31 +271,5 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: '600',
-  },
-  dropdownButton: {
-    backgroundColor: '#111',
-    borderRadius: 8,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#222',
-  },
-  dropdownText: {
-    color: '#fff',
-  },
-  dropdown: {
-    backgroundColor: '#111',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#222',
-    overflow: 'hidden',
-    marginBottom: 10,
-  },
-  dropdownItem: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#222',
-  },
-  dropdownItemText: {
-    color: '#fff',
   },
 });

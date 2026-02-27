@@ -16,20 +16,22 @@ interface StokitoDatabase {
   getAllProducts(): Promise<any[]>;
 
   addInventory(
+    id: string,
     name: string,
     location: string,
     createdAt: string
-  ): Promise<number>;
-  removeInventory(id: number): Promise<number>;
+  ): Promise<string>;
+  removeInventory(id: string): Promise<number>;
   findInventory(id: number): Promise<any>;
   getAllInventories(): Promise<any[]>;
 
   addProductToInventory(
     productId: string,
-    inventoryId: number,
+    inventoryId: string,
     stock: number,
     created_at: string
   ): Promise<number>;
+  getInventoryProducts(inventoryId: string): Promise<any[]>;
 
   addSale(id: string, date: string, total: number): Promise<string>;
   getAllSales(): Promise<any[]>;
@@ -122,25 +124,26 @@ class ApiStokitoDatabase implements StokitoDatabase {
   }
 
   async addInventory(
+    id: string,
     name: string,
     location: string,
     createdAt: string
-  ): Promise<number> {
+  ): Promise<string> {
     const db = (await DB.getInstance('')).connection;
     const result = await db.runAsync(
       `
-      INSERT INTO inventory (name, location, created_at)
-      VALUES (?, ?, ?);
+      INSERT INTO inventory (id, name, location, created_at)
+      VALUES (?, ?, ?, ?);
     `,
-      [name, location, createdAt]
+      [id, name, location, createdAt]
     );
     if (result.changes !== 1) {
       throw new Error('Unexpected number of affected rows during insertion');
     }
-    return result.lastInsertRowId;
+    return id;
   }
 
-  async removeInventory(id: number): Promise<number> {
+  async removeInventory(id: string): Promise<number> {
     const db = (await DB.getInstance('')).connection;
     const result = await db.runAsync(
       `
@@ -184,7 +187,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
 
   async addProductToInventory(
     productId: string,
-    inventoryId: number,
+    inventoryId: string,
     stock: number,
     created_at: string
   ): Promise<number> {
@@ -197,6 +200,27 @@ class ApiStokitoDatabase implements StokitoDatabase {
       [inventoryId, productId, stock, created_at]
     );
     return result.lastInsertRowId;
+  }
+
+  async getInventoryProducts(inventoryId: string): Promise<any[]> {
+    const db = (await DB.getInstance('')).connection;
+    const rows = await db.getAllAsync(
+      `
+      SELECT
+        pd.id,
+        pd.name,
+        pd.sku,
+        pd.sale_price,
+        pd.cost_price,
+        pd.is_discontinued
+      FROM inventory_item ii
+      jOIN product_definition pd
+        ON pd.id = ii.product_definition_id
+      WHERE ii.inventory_id = ?;
+    `,
+      [inventoryId]
+    );
+    return rows;
   }
 
   async addSale(id: string, date: string, total: number): Promise<string> {

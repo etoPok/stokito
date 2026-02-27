@@ -1,24 +1,25 @@
 class Inventory {
-  private _id?: number;
+  private _id: string;
   public name: string;
   public location: string;
-  private _createdAt: string;
+  private _date: string;
 
-  constructor(name: string, location: string) {
+  constructor(id: string, name: string, location: string, date: string) {
+    this._id = id;
     this.name = name;
     this.location = location;
-    this._createdAt = new Date().toISOString();
+    this._date = date;
   }
 
   get createdAt(): string {
-    return this._createdAt;
+    return this._date;
   }
 
-  get id(): number | undefined {
+  get id(): string {
     return this._id;
   }
 
-  setId(id: number): void {
+  setId(id: string): void {
     this._id = id;
   }
 }

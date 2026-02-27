@@ -2,6 +2,7 @@ import 'react-native-get-random-values';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
+import { PaperProvider } from 'react-native-paper';
 
 import Navigation from './components/roastNavigation';
 import DB from './services/dataBase';
@@ -34,8 +35,10 @@ export default function App() {
       <ProductProvider>
         <InventoryProvider>
           <SaleDetailProvider>
-            <StatusBar style="light" />
-            <Navigation />
+            <PaperProvider>
+              <StatusBar style="light" />
+              <Navigation />
+            </PaperProvider>
           </SaleDetailProvider>
         </InventoryProvider>
       </ProductProvider>

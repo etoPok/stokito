@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { setInventory } from '../services/repositories';
 import { useInventories } from '../hooks/inventoryContext';
 import { useTypedNavigation } from '../types';
+import { v4 as uuidv4 } from 'uuid';
 
 let name: string | null = null;
 let location: string | null = null;
@@ -71,8 +72,12 @@ export function AddInventory() {
               console.log('invalid data');
               return;
             }
-            const inventory = await setInventory(name, location);
-            addInventory(inventory!);
+            try {
+              const inventory = await setInventory(uuidv4(), name, location);
+              addInventory(inventory);
+            } catch (error) {
+              console.log(error);
+            }
             console.log('add new inventory');
           }}
         >
