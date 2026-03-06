@@ -1,28 +1,26 @@
 import { View, FlatList, StyleSheet, Pressable, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CardButton } from './../components/cardButton';
-import { useProducts } from '../hooks/productContext';
 import { useInventories } from '../hooks/inventoryContext';
 import { useState } from 'react';
 import {
   getAllInventories,
-  getAllProducts,
   getInventoryProducts,
   removeInventory,
-  removeProduct,
 } from '../services/repositories';
 import { useTypedNavigation } from '../types';
 import { Menu, IconButton } from 'react-native-paper';
 import { AppAccordion, appAccordionStyles } from './../components/appAccordion';
-import Inventory from '../domain/inventory';
-import { Product } from '../domain/product';
+import { Inventory } from '../domain/inventory';
+import { InventoryProduct } from '../domain/inventoryProduct';
 
 export function InventoryScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useTypedNavigation<'InventoryScreen'>();
 
-  const { setProducts } = useProducts();
-  const [inventoryProducts, setInventoryProducts] = useState<Product[]>([]);
+  const [inventoryProducts, setInventoryProducts] = useState<
+    InventoryProduct[]
+  >([]);
   const { inventories, setInventories } = useInventories();
 
   const [visible, setVisible] = useState(false);
@@ -66,17 +64,19 @@ export function InventoryScreen() {
           <Menu.Item
             onPress={() => {
               setVisible(false);
-              navigation.navigate('CreateInventoryScreen');
+              navigation.navigate('InventoryProductScreen', {
+                inventoryProduct: undefined,
+              });
             }}
-            title="Agregar inventario"
+            title="Agregar producto"
             titleStyle={{ color: 'white' }}
           />
           <Menu.Item
             onPress={() => {
               setVisible(false);
-              navigation.navigate('CreateInventoryProductScreen');
+              navigation.navigate('InventoryScreen', { inventory: undefined });
             }}
-            title="Agregar producto"
+            title="Agregar inventario"
             titleStyle={{ color: 'white' }}
           />
           <Menu.Item
@@ -179,7 +179,7 @@ export function InventoryScreen() {
       <FlatList
         contentContainerStyle={styles.listContent}
         data={inventoryProducts}
-        keyExtractor={(item) => (item.sku != null ? item.sku : item.name)}
+        keyExtractor={(item) => item.id!}
         numColumns={2}
         columnWrapperStyle={{ justifyContent: 'space-between' }}
         renderItem={({ item }) => (
@@ -193,16 +193,12 @@ export function InventoryScreen() {
               <Pressable
                 style={styles.deleteProduct}
                 onPress={async () => {
-                  try {
-                    await removeProduct(item.id!);
-                    const newProducts = await getAllProducts();
-                    setProducts(newProducts);
-                  } catch (error) {
-                    throw error;
-                  }
+                  navigation.navigate('InventoryProductScreen', {
+                    inventoryProduct: item,
+                  });
                 }}
               >
-                <Text style={styles.actionText}>Eliminar producto</Text>
+                <Text style={styles.actionText}>Ver producto</Text>
               </Pressable>
             </View>
           </View>

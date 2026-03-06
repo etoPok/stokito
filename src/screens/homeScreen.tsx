@@ -94,7 +94,7 @@ export function HomeScreen() {
               if (item.params === undefined) {
                 navigation.navigate(item.route);
               } else {
-                navigation.navigate(item.route, item.params);
+                navigation.navigate(item.route, item.params as never);
               }
             }}
           />

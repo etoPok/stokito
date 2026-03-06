@@ -1,17 +1,19 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { Product } from '../domain/product';
+import { InventoryProduct } from '../domain/inventoryProduct';
+import { Inventory } from '../domain/inventory';
 
 export type RootStackParamList = {
   HomeScreen: undefined;
-  InventoryScreen: undefined;
   RefundScreen: undefined;
   CheckoutScreen: undefined;
-  CreateInventoryProductScreen: undefined;
-  CreateProductDefinitionScreen: undefined;
-  CreateInventoryScreen: undefined;
   ProductsScreen: undefined;
   ConfirmSaleScreen: { saleId: string };
   SalesScreen: undefined;
+  InventoryScreen: { inventory: Inventory | undefined };
+  ProductScreen: { product: Product | undefined };
+  InventoryProductScreen: { inventoryProduct: InventoryProduct | undefined };
 };
 
 export type ScreenNavigation<T extends keyof RootStackParamList> =

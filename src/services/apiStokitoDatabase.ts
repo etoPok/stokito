@@ -6,10 +6,10 @@ interface StokitoDatabase {
     name: string,
     salePrice: number,
     costPrice: number,
-    description: string,
+    description: string | undefined,
     isDiscontinued: boolean,
     createdAt: string,
-    sku: string | null
+    sku: string | undefined
   ): Promise<string>;
   removeProduct(id: string): Promise<number>;
   findProduct(id: string): Promise<any>;
@@ -22,7 +22,7 @@ interface StokitoDatabase {
     createdAt: string
   ): Promise<string>;
   removeInventory(id: string): Promise<number>;
-  findInventory(id: number): Promise<any>;
+  findInventory(id: string): Promise<any>;
   getAllInventories(): Promise<any[]>;
 
   addProductToInventory(
@@ -51,10 +51,10 @@ class ApiStokitoDatabase implements StokitoDatabase {
     name: string,
     salePrice: number,
     costPrice: number,
-    description: string,
+    description: string | undefined,
     isDiscontinued: boolean,
     createdAt: string,
-    sku: string | null
+    sku: string | undefined
   ): Promise<string> {
     const db = (await DB.getInstance('')).connection;
     // Using throw makes the async function return a rejected promise which is then handled by a try-catch.
@@ -69,8 +69,8 @@ class ApiStokitoDatabase implements StokitoDatabase {
         name,
         salePrice,
         costPrice,
-        sku,
-        description,
+        sku === undefined ? null : sku,
+        description === undefined ? null : description,
         Number(isDiscontinued),
         createdAt,
       ]
@@ -160,11 +160,11 @@ class ApiStokitoDatabase implements StokitoDatabase {
     return result.changes;
   }
 
-  async findInventory(id: number): Promise<any> {
+  async findInventory(id: string): Promise<any> {
     const db = (await DB.getInstance('')).connection;
     const row = await db.getFirstAsync(
       `
-      SELECT * FROM inventory WHERE id = ?;
+      SELECT id, name, location, created_at FROM inventory WHERE id = ?;
     `,
       [id]
     );
@@ -212,7 +212,10 @@ class ApiStokitoDatabase implements StokitoDatabase {
         pd.sku,
         pd.sale_price,
         pd.cost_price,
-        pd.is_discontinued
+        pd.is_discontinued,
+        pd.description,
+        ii.created_at,
+        ii.stock
       FROM inventory_item ii
       jOIN product_definition pd
         ON pd.id = ii.product_definition_id

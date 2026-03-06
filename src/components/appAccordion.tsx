@@ -14,6 +14,7 @@ type AppAccordionProps = {
   children: (value: {
     sendExpandedValue: (value: boolean) => void;
   }) => ReactNode;
+  disabled?: boolean;
   expand?: boolean;
   buttonContainerStyle?: StyleProp<ViewStyle>;
   buttonStyle?: StyleProp<ViewStyle>;
@@ -24,6 +25,7 @@ type AppAccordionProps = {
 export function AppAccordion({
   title,
   children,
+  disabled = false,
   expand = false,
   buttonContainerStyle,
   buttonStyle,
@@ -44,6 +46,7 @@ export function AppAccordion({
             setExpanded(!expanded);
             if (onPress !== undefined) onPress();
           }}
+          disabled={disabled}
         >
           <Text style={titleStyle}> {title} </Text>
         </Pressable>

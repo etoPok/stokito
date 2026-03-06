@@ -5,12 +5,11 @@ import { HomeScreen } from './../screens/homeScreen';
 import { InventoryScreen } from './../screens/inventoriesScreen';
 import { CheckoutScreen } from './../screens/checkoutScreen';
 import { RefundScreen } from './../screens/refundScreen';
-import { CreateInventoryProductScreen } from './../screens/createInventoryProductScreen';
-import { CreateInventoryScreen } from './../screens/createInventoryScreen';
 import { ProductsScreen } from './../screens/productsScreen';
-import { CreateProductDefinitionScreen } from './../screens/createProductDefinitionScreen';
 import { ConfirmSaleScreen } from './../screens/confirmSaleScreen';
 import { SalesScreen } from './../screens/salesScreen';
+import { ProductScreen } from '../screens/productScreen';
+import { InventoryProductScreen } from '../screens/inventoryProductScreen';
 
 const RootStack = createNativeStackNavigator({
   screens: {
@@ -38,24 +37,6 @@ const RootStack = createNativeStackNavigator({
         headerShown: false,
       },
     },
-    CreateProductDefinitionScreen: {
-      screen: CreateProductDefinitionScreen,
-      options: {
-        headerShown: false,
-      },
-    },
-    CreateInventoryProductScreen: {
-      screen: CreateInventoryProductScreen,
-      options: {
-        headerShown: false,
-      },
-    },
-    CreateInventoryScreen: {
-      screen: CreateInventoryScreen,
-      options: {
-        headerShown: false,
-      },
-    },
     ProductsScreen: {
       screen: ProductsScreen,
       options: {
@@ -70,6 +51,18 @@ const RootStack = createNativeStackNavigator({
     },
     SalesScreen: {
       screen: SalesScreen,
+      options: {
+        headerShown: false,
+      },
+    },
+    ProductScreen: {
+      screen: ProductScreen,
+      options: {
+        headerShown: false,
+      },
+    },
+    InventoryProductScreen: {
+      screen: InventoryProductScreen,
       options: {
         headerShown: false,
       },

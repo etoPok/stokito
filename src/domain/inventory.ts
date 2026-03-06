@@ -1,27 +1,17 @@
-class Inventory {
-  private _id: string;
-  public name: string;
-  public location: string;
-  private _date: string;
+export type Inventory = {
+  id: string;
+  name: string;
+  location: string;
+  date: string;
+};
 
-  constructor(id: string, name: string, location: string, date: string) {
-    this._id = id;
-    this.name = name;
-    this.location = location;
-    this._date = date;
-  }
+type InventoryRequired = Pick<Inventory, 'id' | 'name' | 'location'>;
 
-  get createdAt(): string {
-    return this._date;
-  }
-
-  get id(): string {
-    return this._id;
-  }
-
-  setId(id: string): void {
-    this._id = id;
-  }
-}
-
-export default Inventory;
+export const inventoryRequiredFieldMessages: Record<
+  keyof InventoryRequired,
+  string
+> = {
+  id: 'El inventario tiene un id no definido',
+  name: 'El nombre del inventario es requerido',
+  location: 'La ubicación del inventario es requerida',
+};

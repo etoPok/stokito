@@ -2,7 +2,6 @@ import { View, FlatList, StyleSheet, Pressable, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CardButton } from './../components/cardButton';
 import { useProducts } from '../hooks/productContext';
-import { getAllProducts, removeProduct } from '../services/repositories';
 import { useTypedNavigation } from '../types';
 
 export function ProductsScreen() {
@@ -37,7 +36,9 @@ export function ProductsScreen() {
       <View style={styles.actionsContainer}>
         <Pressable
           style={styles.secondaryAction}
-          onPress={() => navigation.navigate('CreateProductDefinitionScreen')}
+          onPress={() =>
+            navigation.navigate('ProductScreen', { product: undefined })
+          }
         >
           <Text style={styles.secondaryActionText}>Agregar producto</Text>
         </Pressable>
@@ -46,7 +47,7 @@ export function ProductsScreen() {
       <FlatList
         contentContainerStyle={styles.listContent}
         data={products}
-        keyExtractor={(item) => (item.sku != null ? item.sku : item.name)}
+        keyExtractor={(item) => item.id!}
         numColumns={2}
         columnWrapperStyle={{ justifyContent: 'space-between' }}
         renderItem={({ item }) => (
@@ -60,19 +61,12 @@ export function ProductsScreen() {
               <Pressable
                 style={styles.deleteProduct}
                 onPress={async () => {
-                  try {
-                    const deleted = await removeProduct(item.id!);
-                    if (deleted) {
-                      console.log('Remove product');
-                    }
-                    const newProducts = await getAllProducts();
-                    setProducts(newProducts);
-                  } catch (error) {
-                    throw error;
-                  }
+                  navigation.navigate('ProductScreen', {
+                    product: item,
+                  });
                 }}
               >
-                <Text style={styles.actionText}>Eliminar producto</Text>
+                <Text style={styles.actionText}>Ver producto</Text>
               </Pressable>
             </View>
           </View>
