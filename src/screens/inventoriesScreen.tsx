@@ -14,7 +14,7 @@ import { AppAccordion, appAccordionStyles } from './../components/appAccordion';
 import { Inventory } from '../domain/inventory';
 import { InventoryProduct } from '../domain/inventoryProduct';
 
-export function InventoryScreen() {
+export function InventoriesScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useTypedNavigation<'InventoryScreen'>();
 

@@ -24,7 +24,7 @@ const options: OptionItem[] = [
     id: '1',
     title: 'Inventarios',
     image: require('../assets/favicon.png'),
-    route: 'InventoryScreen',
+    route: 'InventoriesScreen',
     params: undefined,
   },
   {

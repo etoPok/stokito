@@ -2,7 +2,7 @@ import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { HomeScreen } from './../screens/homeScreen';
-import { InventoryScreen } from './../screens/inventoriesScreen';
+import { InventoriesScreen } from './../screens/inventoriesScreen';
 import { CheckoutScreen } from './../screens/checkoutScreen';
 import { RefundScreen } from './../screens/refundScreen';
 import { ProductsScreen } from './../screens/productsScreen';
@@ -10,6 +10,7 @@ import { ConfirmSaleScreen } from './../screens/confirmSaleScreen';
 import { SalesScreen } from './../screens/salesScreen';
 import { ProductScreen } from '../screens/productScreen';
 import { InventoryProductScreen } from '../screens/inventoryProductScreen';
+import { InventoryScreen } from '../screens/inventoryScreen';
 
 const RootStack = createNativeStackNavigator({
   screens: {
@@ -63,6 +64,12 @@ const RootStack = createNativeStackNavigator({
     },
     InventoryProductScreen: {
       screen: InventoryProductScreen,
+      options: {
+        headerShown: false,
+      },
+    },
+    InventoriesScreen: {
+      screen: InventoriesScreen,
       options: {
         headerShown: false,
       },

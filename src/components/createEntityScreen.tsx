@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRef } from 'react';
 import { View, Alert, ScrollView } from 'react-native';
 import { EntityForm } from './entityForm';
-import { FormHeader } from './FormHeader';
+import { FormHeader } from './formHeader';
 
 type CreateEntityScreenProps<
   T extends FieldValues,
@@ -20,6 +20,7 @@ type CreateEntityScreenProps<
   resolver: any;
 
   getDefaultValues: (route: ScreenRoute<S>) => DefaultValues<T>;
+
   isNew: (route: ScreenRoute<S>) => boolean;
 
   save: (values: T, route: ScreenRoute<S>) => Promise<void>;

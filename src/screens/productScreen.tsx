@@ -4,6 +4,7 @@ import { createResolver } from '../domain/requiredFieldsValidator';
 import { v4 as uuidv4 } from 'uuid';
 import { setProduct } from '../services/repositories';
 import { ProductFormFields } from '../components/productFormFields';
+import { DefaultValues } from 'react-hook-form';
 
 export const ProductScreen = createEntityScreen<Product, 'ProductScreen'>({
   titleNew: 'Nuevo producto',
@@ -14,7 +15,8 @@ export const ProductScreen = createEntityScreen<Product, 'ProductScreen'>({
   isNew: (route) => route.params.product === undefined,
 
   getDefaultValues: (route) =>
-    route.params.product ?? {
+    route.params.product ??
+    ({
       id: uuidv4(),
       name: undefined,
       description: undefined,
@@ -23,7 +25,7 @@ export const ProductScreen = createEntityScreen<Product, 'ProductScreen'>({
       salePrice: undefined,
       isDiscontinued: false,
       createdAt: undefined,
-    },
+    } satisfies DefaultValues<Product>),
 
   save: async (values, route) => {
     if (route.params.product === undefined) {

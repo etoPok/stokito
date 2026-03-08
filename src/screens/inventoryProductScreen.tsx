@@ -7,6 +7,7 @@ import {
 } from '../domain/inventoryProduct';
 import { addProductToInventory } from '../services/repositories';
 import { InventoryProductFormFields } from '../components/inventoryProductFormFields';
+import { DefaultValues } from 'react-hook-form';
 
 export const InventoryProductScreen = createEntityScreen<
   InventoryProduct,
@@ -20,7 +21,8 @@ export const InventoryProductScreen = createEntityScreen<
   isNew: (route) => route.params.inventoryProduct === undefined,
 
   getDefaultValues: (route) =>
-    route.params.inventoryProduct ?? {
+    route.params.inventoryProduct ??
+    ({
       id: uuidv4(),
       name: undefined,
       description: undefined,
@@ -31,7 +33,7 @@ export const InventoryProductScreen = createEntityScreen<
       inventory: undefined,
       isDiscontinued: false,
       createdAt: undefined,
-    },
+    } satisfies DefaultValues<InventoryProduct>),
 
   save: async (values, route) => {
     if (route.params.inventoryProduct === undefined) {

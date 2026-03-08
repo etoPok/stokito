@@ -11,6 +11,7 @@ export type RootStackParamList = {
   ProductsScreen: undefined;
   ConfirmSaleScreen: { saleId: string };
   SalesScreen: undefined;
+  InventoriesScreen: undefined;
   InventoryScreen: { inventory: Inventory | undefined };
   ProductScreen: { product: Product | undefined };
   InventoryProductScreen: { inventoryProduct: InventoryProduct | undefined };
