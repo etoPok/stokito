@@ -5,10 +5,9 @@ import { useCallback, useRef, useState } from 'react';
 import { AndroidCamera } from './../components/camera.android';
 import { findProduct } from '../services/repositories';
 import ScannerMask from './../components/scannerMask';
-import { SaleDatail } from '../domain/saleDetails';
+import { SaleDatail, SaleDetailsByProduct } from '../domain/saleDetails';
 import { Product } from '../domain/product';
 import { v4 as uuidv4 } from 'uuid';
-import { useSaleDetails } from '../hooks/saleDetailsContext';
 
 const SCAN_SIZE = 260;
 const RADIUS = 20;
@@ -17,19 +16,18 @@ export function CheckoutScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useTypedNavigation<'CheckoutScreen'>();
   const [scannerLocked, setScannerLocked] = useState(false);
-  const { saleDetails, addSaleDetail, setSaleDetails } = useSaleDetails();
+  const saleDetails = useRef<SaleDetailsByProduct>({});
   const currentSaleDatail = useRef<SaleDatail | undefined>(undefined);
   const initializedSaleId = useRef<string | null>(null);
   const [scannedProduct, setScannedProduct] = useState<Product | null>(null);
 
   function getSaleDetail(): SaleDatail {
     // check if the product already has an existing sale detail
-    const foundSaleDatail = saleDetails.find((sd) => {
-      return sd.productName === scannedProduct!.name;
+    const productKey = Object.keys(saleDetails.current).find((key) => {
+      return saleDetails.current[key].productName === scannedProduct!.name;
     });
-
-    if (foundSaleDatail != null) {
-      return foundSaleDatail;
+    if (productKey != null) {
+      return saleDetails.current[productKey];
     }
 
     if (
@@ -37,15 +35,16 @@ export function CheckoutScreen() {
       scannedProduct != null &&
       initializedSaleId.current != null
     ) {
-      const newSaleDetail = new SaleDatail(
-        uuidv4(),
-        initializedSaleId.current,
-        scannedProduct.name,
-        0,
-        0,
-        0
-      );
-      addSaleDetail(newSaleDetail);
+      const newSaleDetail: SaleDatail = {
+        id: uuidv4(),
+        saleId: initializedSaleId.current,
+        productName: scannedProduct.name!,
+        salePrice: 0,
+        quantity: 0,
+        subtotal: 0,
+        isVoided: false,
+      };
+      saleDetails.current[scannedProduct.name!] = newSaleDetail;
       return newSaleDetail;
     }
 
@@ -54,15 +53,16 @@ export function CheckoutScreen() {
       return currentSaleDatail.current!;
 
     // new scanned product
-    const newSaleDetail = new SaleDatail(
-      uuidv4(),
-      initializedSaleId.current!,
-      scannedProduct!.name,
-      0,
-      0,
-      0
-    );
-    addSaleDetail(newSaleDetail);
+    const newSaleDetail: SaleDatail = {
+      id: uuidv4(),
+      saleId: initializedSaleId.current!,
+      productName: scannedProduct!.name!,
+      salePrice: 0,
+      quantity: 0,
+      subtotal: 0,
+      isVoided: false,
+    };
+    saleDetails.current[scannedProduct!.name!] = newSaleDetail;
     return newSaleDetail;
   }
 
@@ -73,9 +73,9 @@ export function CheckoutScreen() {
       initializedSaleId.current = uuidv4();
     }
     const sd = getSaleDetail();
-    sd.price = scannedProduct.salePrice;
+    sd.salePrice = scannedProduct.salePrice!;
     sd.quantity += 1;
-    sd.subtotal = sd.price * sd.quantity;
+    sd.subtotal = sd.salePrice * sd.quantity;
 
     currentSaleDatail.current = sd;
     setScannedProduct(null);
@@ -119,7 +119,6 @@ export function CheckoutScreen() {
               style={styles.backButton}
               onPress={() => {
                 navigation.goBack();
-                setSaleDetails([]);
               }}
             >
               <Text style={styles.backText}>Volver</Text>
@@ -147,6 +146,7 @@ export function CheckoutScreen() {
             onPress={() => {
               navigation.navigate('ConfirmSaleScreen', {
                 saleId: initializedSaleId.current!,
+                saleDetails: saleDetails.current,
               });
             }}
           >

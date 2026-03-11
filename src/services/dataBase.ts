@@ -64,11 +64,11 @@ class Database {
         total INTEGER NOT NULL
       );
 
-      CREATE TABLE IF NOT EXISTS sale_product (
+      CREATE TABLE IF NOT EXISTS sale_detail (
         id TEXT PRIMARY KEY,
         sale_id TEXT NOT NULL,
         product_name TEXT NOT NULL,
-        price INTEGER NOT NULL,
+        sale_price INTEGER NOT NULL,
         quantity INTEGER NOT NULL,
         subtotal INTEGER NOT NULL,
         is_voided INTEGER NOT NULL DEFAULT 0,

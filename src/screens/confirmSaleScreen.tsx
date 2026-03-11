@@ -1,56 +1,52 @@
 import { View, StyleSheet, Pressable, Text, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { useSaleDetails } from '../hooks/saleDetailsContext';
-import { SaleDatail } from '../domain/saleDetails';
 import { useTypedRoute } from '../types';
-import { addSale, addSaleDetail } from '../services/repositories';
+import { addSale, postSaleDetails } from '../services/repositories';
+import { useRef } from 'react';
 
 export function ConfirmSaleScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const route = useTypedRoute<'ConfirmSaleScreen'>();
-  const { saleDetails, setSaleDetails } = useSaleDetails();
+  const saleDetailsKeys = useRef<string[]>(
+    Object.keys(route.params.saleDetails)
+  );
 
   function getTotal(): number {
     let total = 0;
-    saleDetails.forEach((sd) => {
-      if (sd.saleId === route.params.saleId) total += sd.subtotal;
+    saleDetailsKeys.current.forEach((key) => {
+      if (route.params.saleDetails[key].saleId === route.params.saleId)
+        total += route.params.saleDetails[key].subtotal;
     });
     return total;
   }
 
-  async function addSaleDetailsToDataBase(): Promise<void> {
-    for (const sd of saleDetails) {
-      if (sd.saleId === route.params.saleId) {
-        await addSaleDetail(
-          sd.id,
-          route.params.saleId,
-          sd.productName,
-          sd.price,
-          sd.quantity,
-          sd.subtotal
-        );
-      }
-    }
-  }
-  const renderItem = ({ item }: { item: SaleDatail }) => (
+  const renderItem = ({ item }: { item: string }) => (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.productName}>{item.productName}</Text>
+        <Text style={styles.productName}>
+          {route.params.saleDetails[item].productName}
+        </Text>
       </View>
       <View style={styles.cardBody}>
         <View style={styles.row}>
           <Text style={styles.label}>Cantidad</Text>
-          <Text style={styles.value}>{item.quantity}</Text>
+          <Text style={styles.value}>
+            {route.params.saleDetails[item].quantity}
+          </Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>Precio unitario</Text>
-          <Text style={styles.value}>${item.price}</Text>
+          <Text style={styles.value}>
+            ${route.params.saleDetails[item].salePrice}
+          </Text>
         </View>
         <View style={[styles.row, styles.totalRow]}>
           <Text style={styles.totalLabel}>Subtotal</Text>
-          <Text style={styles.totalValue}>${item.subtotal}</Text>
+          <Text style={styles.totalValue}>
+            ${route.params.saleDetails[item].subtotal}
+          </Text>
         </View>
       </View>
     </View>
@@ -78,13 +74,13 @@ export function ConfirmSaleScreen() {
         <View style={{ width: 60 }} />
       </View>
       <FlatList
-        data={saleDetails}
+        data={saleDetailsKeys.current}
         keyExtractor={(_, index) => index.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
-      {saleDetails.length > 0 && (
+      {saleDetailsKeys.current.length > 0 && (
         <View style={styles.footer}>
           <Pressable
             style={styles.saveButton}
@@ -92,9 +88,11 @@ export function ConfirmSaleScreen() {
               const date = new Date().toISOString();
               try {
                 await addSale(route.params.saleId, date, getTotal());
-                await addSaleDetailsToDataBase();
+                await postSaleDetails(
+                  route.params.saleDetails,
+                  route.params.saleId
+                );
                 navigation.goBack();
-                setSaleDetails([]);
               } catch (error) {
                 console.log(error);
               }

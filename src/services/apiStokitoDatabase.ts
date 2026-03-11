@@ -41,8 +41,10 @@ interface StokitoDatabase {
     productName: string,
     price: number,
     subtotal: number,
-    quantity: number
+    quantity: number,
+    isVoided: boolean
   ): Promise<string>;
+  fetchAllSaleDetails(): Promise<any[]>;
 }
 
 class ApiStokitoDatabase implements StokitoDatabase {
@@ -258,20 +260,40 @@ class ApiStokitoDatabase implements StokitoDatabase {
     productName: string,
     price: number,
     subtotal: number,
-    quantity: number
+    quantity: number,
+    isVoided: boolean
   ): Promise<string> {
     const db = (await DB.getInstance('')).connection;
     const result = await db.runAsync(
       `
-      INSERT INTO sale_product (id, sale_id, product_name, price, quantity, subtotal)
+      INSERT INTO sale_detail (id, sale_id, product_name, sale_price, quantity, subtotal)
       VALUES (?, ?, ?, ?, ?, ?);
     `,
-      [id, saleId, productName, price, quantity, subtotal]
+      [id, saleId, productName, price, quantity, subtotal, Number(isVoided)]
     );
     if (result.changes !== 1) {
       throw new Error('Unexpected number of affected rows during insertion');
     }
     return id;
+  }
+
+  async fetchAllSaleDetails(): Promise<any[]> {
+    const db = (await DB.getInstance('')).connection;
+    const results = await db.getAllAsync(
+      `
+      SELECT
+        id,
+        sale_id,
+        product_name,
+        sale_price,
+        quantity,
+        subtotal,
+        is_voided
+      FROM sale_detail;
+    `,
+      []
+    );
+    return results;
   }
 }
 

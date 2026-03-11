@@ -2,7 +2,7 @@ export type Inventory = {
   id: string;
   name: string;
   location: string;
-  date: string;
+  createdAt: string;
 };
 
 type InventoryRequired = Pick<Inventory, 'id' | 'name' | 'location'>;

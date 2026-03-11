@@ -7,7 +7,7 @@ import { useTypedNavigation } from '../types';
 export function ProductsScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useTypedNavigation<'ProductsScreen'>();
-  const { products, setProducts } = useProducts();
+  const { products } = useProducts();
 
   return (
     <View
@@ -55,20 +55,10 @@ export function ProductsScreen() {
             <CardButton
               title={item.name}
               imageSource={require('../assets/favicon.png')}
-              onPress={() => {}}
+              onPress={() => {
+                navigation.navigate('ProductScreen', { product: item });
+              }}
             />
-            <View style={styles.actionsRow}>
-              <Pressable
-                style={styles.deleteProduct}
-                onPress={async () => {
-                  navigation.navigate('ProductScreen', {
-                    product: item,
-                  });
-                }}
-              >
-                <Text style={styles.actionText}>Ver producto</Text>
-              </Pressable>
-            </View>
           </View>
         )}
       />

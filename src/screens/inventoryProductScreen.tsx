@@ -5,53 +5,60 @@ import {
   InventoryProduct,
   inventoryProductRequiredFieldsMessages,
 } from '../domain/inventoryProduct';
-import { addProductToInventory } from '../services/repositories';
 import { InventoryProductFormFields } from '../components/inventoryProductFormFields';
 import { DefaultValues } from 'react-hook-form';
+import repository from '../services/repositories';
+import { useProducts } from '../hooks/productContext';
 
-export const InventoryProductScreen = createEntityScreen<
-  InventoryProduct,
-  'InventoryProductScreen'
->({
-  titleNew: 'Nuevo producto',
-  titleView: 'Producto',
+export function InventoryProductScreen() {
+  const { pullProducts } = useProducts();
 
-  resolver: createResolver(inventoryProductRequiredFieldsMessages),
+  return createEntityScreen<InventoryProduct, 'InventoryProductScreen'>({
+    titleNew: 'Nuevo producto',
+    titleView: 'Producto',
 
-  isNew: (route) => route.params.inventoryProduct === undefined,
+    resolver: createResolver(inventoryProductRequiredFieldsMessages),
 
-  getDefaultValues: (route) =>
-    route.params.inventoryProduct ??
-    ({
-      id: uuidv4(),
-      name: undefined,
-      description: undefined,
-      sku: undefined,
-      stok: undefined,
-      costPrice: undefined,
-      salePrice: undefined,
-      inventory: undefined,
-      isDiscontinued: false,
-      createdAt: undefined,
-    } satisfies DefaultValues<InventoryProduct>),
+    isNew: (route) => route.params.inventoryProduct === undefined,
 
-  save: async (values, route) => {
-    if (route.params.inventoryProduct === undefined) {
-      await addProductToInventory(
-        values.id!,
-        values.name!,
-        values.salePrice!,
-        values.costPrice!,
-        values.description,
-        values.isDiscontinued!,
-        values.sku,
-        values.stok!,
-        values.inventory?.id!
-      );
-    } else {
-      console.log('UPDATE');
-    }
-  },
+    getDefaultValues: (route) =>
+      route.params.inventoryProduct ??
+      ({
+        id: uuidv4(),
+        name: undefined,
+        description: undefined,
+        sku: undefined,
+        stok: undefined,
+        costPrice: undefined,
+        salePrice: undefined,
+        inventory: undefined,
+        isDiscontinued: false,
+        createdAt: undefined,
+      } satisfies DefaultValues<InventoryProduct>),
 
-  Fields: InventoryProductFormFields,
-});
+    save: async (values, route) => {
+      if (route.params.inventoryProduct === undefined) {
+        try {
+          await repository.addProductToInventory(
+            values.id!,
+            values.name!,
+            values.salePrice!,
+            values.costPrice!,
+            values.description,
+            values.isDiscontinued!,
+            values.sku,
+            values.stok!,
+            values.inventory?.id!
+          );
+          await pullProducts();
+        } catch (error) {
+          console.log(error);
+        }
+      } else {
+        console.log('UPDATE');
+      }
+    },
+
+    Fields: InventoryProductFormFields,
+  })();
+}

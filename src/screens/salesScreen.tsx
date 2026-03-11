@@ -1,9 +1,8 @@
 import { View, StyleSheet, Text, Pressable, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
 import { Sale } from '../domain/sale';
 import { useEffect, useState } from 'react';
-import { getAllSales } from '../services/repositories';
+import repository from '../services/repositories';
 import { useTypedNavigation } from '../types';
 
 const dateFormater = Intl.DateTimeFormat('es-Es', {
@@ -19,7 +18,7 @@ export function SalesScreen() {
   useEffect(() => {
     const getSales = async () => {
       try {
-        const results = await getAllSales();
+        const results = await repository.getAllSales();
         setSales(results);
       } catch (error) {
         console.log(error);

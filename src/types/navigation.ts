@@ -3,13 +3,14 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { Product } from '../domain/product';
 import { InventoryProduct } from '../domain/inventoryProduct';
 import { Inventory } from '../domain/inventory';
+import { SaleDetailsByProduct } from '../domain/saleDetails';
 
 export type RootStackParamList = {
   HomeScreen: undefined;
   RefundScreen: undefined;
   CheckoutScreen: undefined;
   ProductsScreen: undefined;
-  ConfirmSaleScreen: { saleId: string };
+  ConfirmSaleScreen: { saleId: string; saleDetails: SaleDetailsByProduct };
   SalesScreen: undefined;
   InventoriesScreen: undefined;
   InventoryScreen: { inventory: Inventory | undefined };

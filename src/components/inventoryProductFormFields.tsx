@@ -11,9 +11,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { AppAccordion, appAccordionStyles } from './appAccordion';
 import { InventoryProduct } from '../domain/inventoryProduct';
 import { FormFieldsProps } from './entityForm';
-import { useEffect, useState } from 'react';
-import { Inventory } from '../domain/inventory';
-import { getAllInventories } from '../services/repositories';
+import { useInventories } from '../hooks/inventoryContext';
 
 export function InventoryProductFormFields({ editable }: FormFieldsProps) {
   const {
@@ -21,19 +19,7 @@ export function InventoryProductFormFields({ editable }: FormFieldsProps) {
     formState: { errors },
     getValues,
   } = useFormContext<InventoryProduct>();
-  const [inventories, setInventories] = useState<Inventory[]>([]);
-
-  useEffect(() => {
-    const fn = async () => {
-      try {
-        const results = await getAllInventories();
-        setInventories(results);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fn();
-  }, []);
+  const { inventories } = useInventories();
 
   return (
     <>

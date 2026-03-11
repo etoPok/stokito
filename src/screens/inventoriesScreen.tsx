@@ -1,27 +1,23 @@
 import { View, FlatList, StyleSheet, Pressable, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CardButton } from './../components/cardButton';
-import { useInventories } from '../hooks/inventoryContext';
 import { useState } from 'react';
-import {
-  getAllInventories,
-  getInventoryProducts,
-  removeInventory,
-} from '../services/repositories';
 import { useTypedNavigation } from '../types';
 import { Menu, IconButton } from 'react-native-paper';
 import { AppAccordion, appAccordionStyles } from './../components/appAccordion';
 import { Inventory } from '../domain/inventory';
 import { InventoryProduct } from '../domain/inventoryProduct';
+import { useInventories } from '../hooks/inventoryContext';
+import repository from '../services/repositories';
 
 export function InventoriesScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useTypedNavigation<'InventoryScreen'>();
+  const { inventories, removeInventory } = useInventories();
 
   const [inventoryProducts, setInventoryProducts] = useState<
     InventoryProduct[]
   >([]);
-  const { inventories, setInventories } = useInventories();
 
   const [visible, setVisible] = useState(false);
   const [deleteInventory, setDeleteInventory] = useState<boolean>(false);
@@ -109,10 +105,10 @@ export function InventoriesScreen() {
                   key={index}
                   onPress={async () => {
                     try {
-                      const productsObtained = await getInventoryProducts(
+                      const results = await repository.getInventoryProducts(
                         inv.id
                       );
-                      setInventoryProducts(productsObtained);
+                      setInventoryProducts(results);
                       setSelectedInventory(inv);
                       sendExpandedValue(false);
                     } catch (error) {
@@ -159,8 +155,6 @@ export function InventoriesScreen() {
                     onPress={async () => {
                       try {
                         await removeInventory(inv.id);
-                        const newInventories = await getAllInventories();
-                        setInventories(newInventories);
                         setDeleteInventory(false);
                         setSelectedInventory(null);
                         sendExpandedValue(false);
@@ -187,20 +181,12 @@ export function InventoriesScreen() {
             <CardButton
               title={item.name}
               imageSource={require('../assets/favicon.png')}
-              onPress={() => {}}
+              onPress={() => {
+                navigation.navigate('InventoryProductScreen', {
+                  inventoryProduct: item,
+                });
+              }}
             />
-            <View style={styles.actionsRow}>
-              <Pressable
-                style={styles.deleteProduct}
-                onPress={async () => {
-                  navigation.navigate('InventoryProductScreen', {
-                    inventoryProduct: item,
-                  });
-                }}
-              >
-                <Text style={styles.actionText}>Ver producto</Text>
-              </Pressable>
-            </View>
           </View>
         )}
       />

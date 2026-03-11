@@ -41,10 +41,10 @@ export function InventoryFormFields({ editable }: FormFieldsProps) {
           name="location"
           render={({ field: { onChange } }) => (
             <>
-              <Text style={styles.label}>Nombre</Text>
+              <Text style={styles.label}>Ubicación</Text>
               <TextInput
                 style={styles.input}
-                value={getValues().name}
+                value={getValues().location}
                 placeholder="Ubicación de inventario"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}

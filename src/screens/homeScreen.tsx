@@ -6,7 +6,6 @@ import { RootStackParamList, useTypedNavigation } from '../types';
 import { useEffect } from 'react';
 import { useInventories } from '../hooks/inventoryContext';
 import { useProducts } from '../hooks/productContext';
-import { getAllInventories, getAllProducts } from '../services/repositories';
 
 // discriminated union
 type OptionItem = {
@@ -53,22 +52,17 @@ const options: OptionItem[] = [
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useTypedNavigation<'HomeScreen'>();
-  const { setProducts } = useProducts();
-  const { setInventories } = useInventories();
+  const { pullProducts } = useProducts();
+  const { pullInventories } = useInventories();
   useEffect(() => {
-    const getData = async () => {
+    (async () => {
       try {
-        const inventories = await getAllInventories();
-        console.log('query resolved inventories');
-        setInventories(inventories);
-        const products = await getAllProducts();
-        console.log('query resolved products');
-        setProducts(products);
+        await pullInventories();
+        await pullProducts();
       } catch (error) {
         console.log(error);
       }
-    };
-    getData();
+    })();
   }, []);
 
   return (
