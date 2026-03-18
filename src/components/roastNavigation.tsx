@@ -11,6 +11,7 @@ import { SalesScreen } from './../screens/salesScreen';
 import { ProductScreen } from '../screens/productScreen';
 import { InventoryProductScreen } from '../screens/inventoryProductScreen';
 import { InventoryScreen } from '../screens/inventoryScreen';
+import { BarcodeScannerScreen } from '../screens/barcodeScannerScreen';
 
 const RootStack = createNativeStackNavigator({
   screens: {
@@ -70,6 +71,12 @@ const RootStack = createNativeStackNavigator({
     },
     InventoriesScreen: {
       screen: InventoriesScreen,
+      options: {
+        headerShown: false,
+      },
+    },
+    BarcodeScannerScreen: {
+      screen: BarcodeScannerScreen,
       options: {
         headerShown: false,
       },

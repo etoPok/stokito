@@ -3,7 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTypedNavigation } from '../types';
 import { useCallback, useRef, useState } from 'react';
 import { AndroidCamera } from './../components/camera.android';
-import { findProduct } from '../services/repositories';
+import repository from '../services/repositories';
 import ScannerMask from './../components/scannerMask';
 import { SaleDatail, SaleDetailsByProduct } from '../domain/saleDetails';
 import { Product } from '../domain/product';
@@ -91,7 +91,7 @@ export function CheckoutScreen() {
 
       setScannerLocked(true);
       try {
-        const product = await findProduct(code);
+        const product = await repository.findProduct(code);
         console.log(`Found product ${product.id}`);
         setScannedProduct(product);
       } catch (error) {

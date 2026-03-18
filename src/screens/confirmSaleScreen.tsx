@@ -2,7 +2,7 @@ import { View, StyleSheet, Pressable, Text, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTypedRoute } from '../types';
-import { addSale, postSaleDetails } from '../services/repositories';
+import repository from '../services/repositories';
 import { useRef } from 'react';
 
 export function ConfirmSaleScreen() {
@@ -87,8 +87,8 @@ export function ConfirmSaleScreen() {
             onPress={async () => {
               const date = new Date().toISOString();
               try {
-                await addSale(route.params.saleId, date, getTotal());
-                await postSaleDetails(
+                await repository.addSale(route.params.saleId, date, getTotal());
+                await repository.postSaleDetails(
                   route.params.saleDetails,
                   route.params.saleId
                 );

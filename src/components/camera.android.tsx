@@ -43,7 +43,7 @@ export const AndroidCamera = React.memo(function AndroidCamera({
   }, []);
 
   const codeScanner = useCodeScanner({
-    codeTypes: ['qr'],
+    codeTypes: ['ean-13', 'ean-8', 'upc-a', 'code-128'],
     onCodeScanned: onCodeScanned,
   });
 

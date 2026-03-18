@@ -16,6 +16,7 @@ export type RootStackParamList = {
   InventoryScreen: { inventory: Inventory | undefined };
   ProductScreen: { product: Product | undefined };
   InventoryProductScreen: { inventoryProduct: InventoryProduct | undefined };
+  BarcodeScannerScreen: undefined;
 };
 
 export type ScreenNavigation<T extends keyof RootStackParamList> =

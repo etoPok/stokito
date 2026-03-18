@@ -25,7 +25,7 @@ type CreateEntityScreenProps<
 
   save: (values: T, route: ScreenRoute<S>) => Promise<void>;
 
-  Fields: React.ComponentType<{ editable: boolean }>;
+  Fields: React.ComponentType<{ editable: boolean; isNew: boolean }>;
 };
 
 export function createEntityScreen<
@@ -72,7 +72,7 @@ export function createEntityScreen<
               navigation={navigation}
             />
 
-            <config.Fields editable={editable} />
+            <config.Fields editable={editable} isNew={config.isNew(route)} />
           </ScrollView>
         </EntityForm>
       </View>

@@ -3,7 +3,7 @@ import { Inventory } from './inventory';
 export type InventoryProduct = {
   id: string | undefined;
   name: string | undefined;
-  sku: string | undefined;
+  barcode: string | undefined;
   salePrice: number | undefined;
   costPrice: number | undefined;
   description: string | undefined;
@@ -22,6 +22,7 @@ type InventoryProductRequired = Pick<
   | 'isDiscontinued'
   | 'stok'
   | 'inventory'
+  | 'barcode'
 >;
 
 export const inventoryProductRequiredFieldsMessages: Record<
@@ -35,4 +36,5 @@ export const inventoryProductRequiredFieldsMessages: Record<
   isDiscontinued: 'Debe especificar si el producto esta descontinuado',
   stok: 'El stok del producto es requerido',
   inventory: 'El inventario del producto es un campo requerido',
+  barcode: 'El código de barras del  producto es un campo requerido',
 };

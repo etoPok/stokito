@@ -7,22 +7,29 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Controller, useFormContext } from 'react-hook-form';
-import QRCode from 'react-native-qrcode-svg';
 import { AppAccordion, appAccordionStyles } from './appAccordion';
 import { InventoryProduct } from '../domain/inventoryProduct';
 import { FormFieldsProps } from './entityForm';
 import { useInventories } from '../hooks/inventoryContext';
+import { SelectBarcode } from './selectBarcode';
+import { useTypedNavigation } from '../types';
+import { Barcode } from './barcode';
+import { detectBarcodeType, toBarcodeFormat } from '../utils/barcode';
 
-export function InventoryProductFormFields({ editable }: FormFieldsProps) {
+export function InventoryProductFormFields({
+  editable,
+  isNew,
+}: FormFieldsProps) {
   const {
     control,
     formState: { errors },
     getValues,
   } = useFormContext<InventoryProduct>();
   const { inventories } = useInventories();
+  const navigation = useTypedNavigation<'InventoryProductScreen'>();
 
   return (
-    <>
+    <View style={styles.container}>
       <View style={styles.field}>
         <Controller
           control={control}
@@ -105,26 +112,6 @@ export function InventoryProductFormFields({ editable }: FormFieldsProps) {
       <View style={styles.field}>
         <Controller
           control={control}
-          name="sku"
-          render={({ field: { onChange } }) => (
-            <>
-              <Text style={styles.label}>Código de producto (opcional)</Text>
-              <TextInput
-                style={styles.input}
-                value={getValues().sku}
-                placeholder="SKU o código interno"
-                placeholderTextColor="#777"
-                onChangeText={(text) => onChange(text)}
-                editable={editable}
-              />
-            </>
-          )}
-        />
-      </View>
-
-      <View style={styles.field}>
-        <Controller
-          control={control}
           name="stok"
           render={({ field: { onChange } }) => (
             <>
@@ -171,76 +158,107 @@ export function InventoryProductFormFields({ editable }: FormFieldsProps) {
         />
       </View>
 
-      <View style={styles.switchRow}>
+      <View style={styles.field}>
+        <Text style={styles.label}>Bodega</Text>
         <Controller
           control={control}
-          name="isDiscontinued"
+          name="inventory"
           render={({ field: { onChange } }) => (
-            <>
-              <Text style={styles.label}>Descontinuado</Text>
-              <Switch
-                value={getValues().isDiscontinued}
-                onValueChange={(value) => onChange(value)}
-                disabled={!editable}
-              />
-            </>
+            <AppAccordion
+              title={
+                getValues().inventory !== undefined
+                  ? getValues().inventory!.name
+                  : 'Seleccionar inventario'
+              }
+              titleStyle={appAccordionStyles.buttonText}
+              buttonContainerStyle={appAccordionStyles.buttonContainer}
+              buttonStyle={appAccordionStyles.button}
+              disabled={!editable}
+            >
+              {({ sendExpandedValue }) => (
+                <View style={appAccordionStyles.dropdown}>
+                  {inventories.map((inv, index) => (
+                    <Pressable
+                      key={index}
+                      style={appAccordionStyles.item}
+                      onPress={() => {
+                        onChange(inv);
+                        sendExpandedValue(false);
+                      }}
+                    >
+                      <Text style={appAccordionStyles.itemText}>
+                        {inv.name}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </AppAccordion>
           )}
         />
-      </View>
-
-      <Controller
-        control={control}
-        name="inventory"
-        render={({ field: { onChange } }) => (
-          <AppAccordion
-            title={
-              getValues().inventory !== undefined
-                ? getValues().inventory!.name
-                : 'Seleccionar inventario'
-            }
-            titleStyle={appAccordionStyles.buttonText}
-            buttonContainerStyle={appAccordionStyles.buttonContainer}
-            buttonStyle={appAccordionStyles.button}
-            disabled={!editable}
-          >
-            {({ sendExpandedValue }) => (
-              <View style={appAccordionStyles.dropdown}>
-                {inventories.map((inv, index) => (
-                  <Pressable
-                    key={index}
-                    style={appAccordionStyles.item}
-                    onPress={() => {
-                      onChange(inv);
-                      sendExpandedValue(false);
-                    }}
-                  >
-                    <Text style={appAccordionStyles.itemText}>{inv.name}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            )}
-          </AppAccordion>
+        {errors.inventory && (
+          <Text style={{ color: 'red' }}>{errors.inventory.message}</Text>
         )}
-      />
-      {errors.inventory && (
-        <Text style={{ color: 'red' }}>{errors.inventory.message}</Text>
-      )}
-
-      <View style={styles.qrPreviewContainer}>
-        <View style={styles.qrBox}>
-          <QRCode
-            value={getValues().id}
-            size={200}
-            backgroundColor="black"
-            color="white"
-          />
-        </View>
       </View>
-    </>
+
+      {isNew ? (
+        <>
+          <Controller
+            control={control}
+            name="barcode"
+            render={({ field: { onChange } }) => (
+              <SelectBarcode
+                navigation={navigation}
+                onChange={(barcode) => {
+                  onChange(barcode);
+                }}
+              ></SelectBarcode>
+            )}
+          />
+          {errors.barcode && (
+            <Text style={{ color: 'red' }}>{errors.barcode.message}</Text>
+          )}
+        </>
+      ) : (
+        <>
+          <View style={styles.switchRow}>
+            <Controller
+              control={control}
+              name="isDiscontinued"
+              render={({ field: { onChange } }) => (
+                <>
+                  <Text style={styles.label}>Descontinuado</Text>
+                  <Switch
+                    value={getValues().isDiscontinued}
+                    onValueChange={(value) => onChange(value)}
+                    disabled={!editable}
+                  />
+                </>
+              )}
+            />
+          </View>
+          <View style={styles.barcodeContainer}>
+            <Barcode
+              barcode={getValues().barcode!}
+              format={toBarcodeFormat(detectBarcodeType(getValues().barcode!))}
+            />
+          </View>
+        </>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 16,
+  },
+  barcodeContainer: {
+    flex: 1,
+    backgroundColor: 'black',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   field: {
     marginBottom: 16,
   },
@@ -267,23 +285,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginVertical: 10,
-  },
-  qrPreviewContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-  },
-  qrBox: {
-    width: 300,
-    height: 300,
-    backgroundColor: '#111',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#222',
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
   },
   footer: {
     paddingTop: 12,

@@ -12,6 +12,7 @@ import { EntityFormContext } from '../hooks/entityFormContext';
 
 export type FormFieldsProps = {
   editable: boolean;
+  isNew: boolean;
 };
 
 type EntityFormProps<T extends FieldValues> = {
@@ -82,6 +83,7 @@ const styles = StyleSheet.create({
   footer: {
     paddingTop: 12,
     paddingBottom: 8,
+    paddingHorizontal: 16,
   },
   saveButton: {
     backgroundColor: '#4da6ff',
@@ -90,7 +92,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveButtonText: {
-    color: '#000',
+    color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },

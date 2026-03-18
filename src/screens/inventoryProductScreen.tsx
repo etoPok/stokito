@@ -27,7 +27,7 @@ export function InventoryProductScreen() {
         id: uuidv4(),
         name: undefined,
         description: undefined,
-        sku: undefined,
+        barcode: undefined,
         stok: undefined,
         costPrice: undefined,
         salePrice: undefined,
@@ -46,7 +46,7 @@ export function InventoryProductScreen() {
             values.costPrice!,
             values.description,
             values.isDiscontinued!,
-            values.sku,
+            values.barcode,
             values.stok!,
             values.inventory?.id!
           );

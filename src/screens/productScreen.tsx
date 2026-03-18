@@ -23,7 +23,7 @@ export function ProductScreen() {
         id: uuidv4(),
         name: undefined,
         description: undefined,
-        sku: undefined,
+        barcode: undefined,
         costPrice: undefined,
         salePrice: undefined,
         isDiscontinued: false,
@@ -39,7 +39,7 @@ export function ProductScreen() {
           costPrice: values.costPrice!,
           description: values.description,
           isDiscontinued: values.isDiscontinued!,
-          sku: values.sku,
+          barcode: values.barcode,
           createdAt: '',
         });
       } else {

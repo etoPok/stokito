@@ -1,18 +1,22 @@
 import { Text, View, TextInput, Switch, StyleSheet } from 'react-native';
 import { Controller, useFormContext } from 'react-hook-form';
-import QRCode from 'react-native-qrcode-svg';
 import { Product } from '../domain/product';
 import { FormFieldsProps } from './entityForm';
+import { SelectBarcode } from './selectBarcode';
+import { useTypedNavigation } from '../types';
+import { Barcode } from './barcode';
+import { detectBarcodeType, toBarcodeFormat } from '../utils/barcode';
 
-export function ProductFormFields({ editable }: FormFieldsProps) {
+export function ProductFormFields({ editable, isNew }: FormFieldsProps) {
   const {
     control,
     formState: { errors },
     getValues,
   } = useFormContext<Product>();
+  const navigation = useTypedNavigation<'ProductScreen'>();
 
   return (
-    <>
+    <View style={styles.container}>
       <View style={styles.field}>
         <Controller
           control={control}
@@ -95,26 +99,6 @@ export function ProductFormFields({ editable }: FormFieldsProps) {
       <View style={styles.field}>
         <Controller
           control={control}
-          name="sku"
-          render={({ field: { onChange } }) => (
-            <>
-              <Text style={styles.label}>Código de producto (opcional)</Text>
-              <TextInput
-                style={styles.input}
-                value={getValues().sku}
-                placeholder="SKU o código interno"
-                placeholderTextColor="#777"
-                onChangeText={(text) => onChange(text)}
-                editable={editable}
-              />
-            </>
-          )}
-        />
-      </View>
-
-      <View style={styles.field}>
-        <Controller
-          control={control}
           name="description"
           render={({ field: { onChange } }) => (
             <>
@@ -133,38 +117,64 @@ export function ProductFormFields({ editable }: FormFieldsProps) {
         />
       </View>
 
-      <View style={styles.switchRow}>
-        <Controller
-          control={control}
-          name="isDiscontinued"
-          render={({ field: { onChange } }) => (
-            <>
-              <Text style={styles.label}>Descontinuado</Text>
-              <Switch
-                value={getValues().isDiscontinued}
-                onValueChange={(value) => onChange(value)}
-                disabled={!editable}
-              />
-            </>
-          )}
-        />
-      </View>
-
-      <View style={styles.qrPreviewContainer}>
-        <View style={styles.qrBox}>
-          <QRCode
-            value={getValues().id}
-            size={200}
-            backgroundColor="black"
-            color="white"
+      {isNew ? (
+        <>
+          <Controller
+            control={control}
+            name="barcode"
+            render={({ field: { onChange } }) => (
+              <SelectBarcode
+                navigation={navigation}
+                onChange={(barcode) => {
+                  onChange(barcode);
+                }}
+              ></SelectBarcode>
+            )}
           />
-        </View>
-      </View>
-    </>
+          {errors.barcode && (
+            <Text style={{ color: 'red' }}>{errors.barcode.message}</Text>
+          )}
+        </>
+      ) : (
+        <>
+          <View style={styles.switchRow}>
+            <Controller
+              control={control}
+              name="isDiscontinued"
+              render={({ field: { onChange } }) => (
+                <>
+                  <Text style={styles.label}>Descontinuado</Text>
+                  <Switch
+                    value={getValues().isDiscontinued}
+                    onValueChange={(value) => onChange(value)}
+                    disabled={!editable}
+                  />
+                </>
+              )}
+            />
+          </View>
+          <View style={styles.barcodeContainer}>
+            <Barcode
+              barcode={getValues().barcode!}
+              format={toBarcodeFormat(detectBarcodeType(getValues().barcode!))}
+            />
+          </View>
+        </>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 16,
+  },
+  barcodeContainer: {
+    flex: 1,
+    backgroundColor: 'black',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   field: {
     marginBottom: 16,
   },
@@ -192,23 +202,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 10,
   },
-  qrPreviewContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-  },
-  qrBox: {
-    width: 300,
-    height: 300,
-    backgroundColor: '#111',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#222',
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-  },
   footer: {
     paddingTop: 12,
     paddingBottom: 8,
@@ -223,5 +216,10 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
     fontWeight: '600',
+  },
+  barcodeConstainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
   },
 });

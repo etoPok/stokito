@@ -26,7 +26,7 @@ export const ProductProvider = ({ children }: ProductProviderProps) => {
       product.costPrice!,
       product.description!,
       product.isDiscontinued!,
-      product.sku
+      product.barcode
     );
     setProductsState((prev) => [...prev, product]);
   };

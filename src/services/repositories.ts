@@ -34,7 +34,7 @@ class Repository {
       costPrice: costPrice,
       description: description,
       isDiscontinued: isDiscontinued,
-      sku: sku,
+      barcode: sku,
       createdAt: createdAt,
     };
     return product;
@@ -52,7 +52,7 @@ class Repository {
         costPrice: r.cost_price,
         description: r.description,
         isDiscontinued: r.is_discontinued,
-        sku: r.sku,
+        barcode: r.sku,
         createdAt: r.created_at,
       };
       products.push(product);
@@ -69,7 +69,7 @@ class Repository {
       costPrice: row.cost_price,
       description: row.description,
       isDiscontinued: row.is_discontinued,
-      sku: row.sku,
+      barcode: row.sku,
       createdAt: row.created_at,
     };
     return product;
@@ -182,7 +182,7 @@ class Repository {
         costPrice: r.cost_price,
         description: r.description,
         isDiscontinued: r.is_discontinued,
-        sku: r.sku,
+        barcode: r.sku,
         createdAt: r.created_at,
         stok: r.stock,
         inventory: inventory,

@@ -1,7 +1,7 @@
 export type Product = {
   id: string | undefined;
   name: string | undefined;
-  sku: string | undefined;
+  barcode: string | undefined;
   salePrice: number | undefined;
   costPrice: number | undefined;
   description: string | undefined;
@@ -11,7 +11,7 @@ export type Product = {
 
 type ProductRequired = Pick<
   Product,
-  'id' | 'name' | 'salePrice' | 'costPrice' | 'isDiscontinued'
+  'id' | 'name' | 'salePrice' | 'costPrice' | 'isDiscontinued' | 'barcode'
 >;
 
 export const productRequiredFieldMessages: Record<
@@ -23,4 +23,5 @@ export const productRequiredFieldMessages: Record<
   salePrice: 'El precio de venta del producto es requerido',
   costPrice: 'El precio de costo del producto es requerido',
   isDiscontinued: 'Debe especificar si el producto esta descontinuado',
+  barcode: 'El código de barras del  producto es un campo requerido',
 };
