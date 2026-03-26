@@ -6,7 +6,7 @@ import {
   ScreenRoute,
 } from '../types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Alert, ScrollView } from 'react-native';
 import { EntityForm } from './entityForm';
 import { FormHeader } from './formHeader';
@@ -28,64 +28,78 @@ type CreateEntityScreenProps<
   Fields: React.ComponentType<{ editable: boolean; isNew: boolean }>;
 };
 
-export function createEntityScreen<
+export function CreateEntityScreen<
   T extends FieldValues,
   S extends keyof RootStackParamList,
->(config: CreateEntityScreenProps<T, S>) {
-  return function EntityScreen() {
-    const navigation = useTypedNavigation<S>();
-    const route = useTypedRoute<S>();
-    const insets = useSafeAreaInsets();
+>({
+  titleNew,
+  titleView,
+  resolver,
+  getDefaultValues,
+  isNew,
+  save,
+  Fields,
+}: CreateEntityScreenProps<T, S>) {
+  const navigation = useTypedNavigation<S>();
+  const route = useTypedRoute<S>();
+  const insets = useSafeAreaInsets();
 
-    const editable = config.isNew(route);
+  const editable = isNew(route);
 
-    const [originalValues, setOriginalValues] =
-      useState<DefaultValues<T> | null>(
-        ((): DefaultValues<T> | null => {
-          config.getDefaultValues(route).then((dv) => {
-            setOriginalValues(dv);
-          });
-          return null;
-        })()
-      );
+  const [originalValues, setOriginalValues] = useState<DefaultValues<T> | null>(
+    null
+  );
 
-    async function save(values: T) {
-      await config.save(values, route);
-      navigation.goBack();
-    }
+  useEffect(() => {
+    let mounted = true;
 
-    function onInvalid(errors: any) {
-      Alert.alert('Datos inválidos', 'Existen campos sin llenar');
-    }
+    getDefaultValues(route).then((dv) => {
+      if (mounted) {
+        setOriginalValues(dv);
+      }
+    });
 
-    if (originalValues == null) return;
+    return () => {
+      mounted = false;
+    };
+  }, [getDefaultValues, route]);
 
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: 'black',
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom,
-        }}
-      >
-        <EntityForm
-          initialValues={originalValues}
-          editable={editable}
-          onValid={save}
-          onInvalid={onInvalid}
-          resolver={config.resolver}
-        >
-          <ScrollView>
-            <FormHeader
-              title={editable ? config.titleNew : config.titleView}
-              navigation={navigation}
-            />
-
-            <config.Fields editable={editable} isNew={config.isNew(route)} />
-          </ScrollView>
-        </EntityForm>
-      </View>
-    );
+  const onValid = async (values: T) => {
+    await save(values, route);
+    navigation.goBack();
   };
+
+  const onInvalid = (errors: any) => {
+    Alert.alert('Datos inválidos', 'Existen campos sin llenar');
+  };
+
+  if (originalValues == null) return;
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: 'black',
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+      }}
+    >
+      <EntityForm
+        initialValues={originalValues}
+        editable={editable}
+        onValid={onValid}
+        onInvalid={onInvalid}
+        resolver={resolver}
+      >
+        <ScrollView>
+          <FormHeader
+            title={editable ? titleNew : titleView}
+            navigation={navigation}
+          />
+
+          <Fields editable={editable} isNew={editable} />
+        </ScrollView>
+      </EntityForm>
+    </View>
+  );
 }

@@ -82,8 +82,7 @@ export function HandleCode<S extends keyof RootStackParamList>({
         {code != null && (
           <Pressable
             style={({ pressed }) => [
-              styles.button,
-              { backgroundColor: 'red', width: 150 },
+              styles.cancelButton,
               pressed && styles.buttonPressed,
             ]}
             onPress={() => {
@@ -120,27 +119,13 @@ export function HandleCode<S extends keyof RootStackParamList>({
             <>
               {handleRemove && (
                 <>
-                  <View
-                    style={{
-                      width: 1,
-                      height: 20,
-                      marginHorizontal: 15,
-                      backgroundColor: '#999',
-                    }}
-                  ></View>
+                  <View style={styles.spacer}></View>
                   <TouchableOpacity
                     onPress={() => handleRemove(code!, codeType.current)}
                   >
                     <Ionicons name="trash" size={22} color="#999" />
                   </TouchableOpacity>
-                  <View
-                    style={{
-                      width: 1,
-                      height: 20,
-                      marginHorizontal: 15,
-                      backgroundColor: '#999',
-                    }}
-                  ></View>
+                  <View style={styles.spacer}></View>
                 </>
               )}
               <TouchableOpacity
@@ -198,5 +183,22 @@ const styles = StyleSheet.create({
     color: '#3b82f6',
     fontSize: 14,
     fontWeight: '500',
+  },
+
+  cancelButton: {
+    backgroundColor: 'red',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#1e293b',
+    width: 150,
+  },
+
+  spacer: {
+    width: 1,
+    height: 20,
+    marginHorizontal: 15,
+    backgroundColor: '#999',
   },
 });

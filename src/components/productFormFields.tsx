@@ -44,7 +44,7 @@ export function ProductFormFields({ isNew }: FormFieldsProps) {
           )}
         />
         {errors.product?.name && (
-          <Text style={{ color: 'red' }}>{errors.product.name.message}</Text>
+          <Text style={styles.errorMessage}>{errors.product.name.message}</Text>
         )}
       </View>
 
@@ -72,7 +72,7 @@ export function ProductFormFields({ isNew }: FormFieldsProps) {
           )}
         />
         {errors.product?.costPrice && (
-          <Text style={{ color: 'red' }}>
+          <Text style={styles.errorMessage}>
             {errors.product.costPrice.message}
           </Text>
         )}
@@ -102,7 +102,7 @@ export function ProductFormFields({ isNew }: FormFieldsProps) {
           )}
         />
         {errors.product?.salePrice && (
-          <Text style={{ color: 'red' }}>
+          <Text style={styles.errorMessage}>
             {errors.product.salePrice.message}
           </Text>
         )}
@@ -200,7 +200,7 @@ export function ProductFormFields({ isNew }: FormFieldsProps) {
         )}
       />
       {errors.productCode && (
-        <Text style={{ color: 'red' }}>{errors.productCode.message}</Text>
+        <Text style={styles.errorMessage}>{errors.productCode.message}</Text>
       )}
     </View>
   );
@@ -262,5 +262,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
+  },
+  errorMessage: {
+    color: 'red',
   },
 });

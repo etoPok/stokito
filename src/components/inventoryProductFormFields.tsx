@@ -57,7 +57,7 @@ export function InventoryProductFormFields({
           )}
         />
         {errors.inventoryProduct?.name && (
-          <Text style={{ color: 'red' }}>
+          <Text style={styles.errorMessage}>
             {errors.inventoryProduct.name.message}
           </Text>
         )}
@@ -87,7 +87,7 @@ export function InventoryProductFormFields({
           )}
         />
         {errors.inventoryProduct?.costPrice && (
-          <Text style={{ color: 'red' }}>
+          <Text style={styles.errorMessage}>
             {errors.inventoryProduct.costPrice.message}
           </Text>
         )}
@@ -117,7 +117,7 @@ export function InventoryProductFormFields({
           )}
         />
         {errors.inventoryProduct?.salePrice && (
-          <Text style={{ color: 'red' }}>
+          <Text style={styles.errorMessage}>
             {errors.inventoryProduct.salePrice.message}
           </Text>
         )}
@@ -147,7 +147,7 @@ export function InventoryProductFormFields({
           )}
         />
         {errors.inventoryProduct?.stok && (
-          <Text style={{ color: 'red' }}>
+          <Text style={styles.errorMessage}>
             {errors.inventoryProduct.stok.message}
           </Text>
         )}
@@ -213,7 +213,7 @@ export function InventoryProductFormFields({
           )}
         />
         {errors.inventoryProduct?.inventory && (
-          <Text style={{ color: 'red' }}>
+          <Text style={styles.errorMessage}>
             {errors.inventoryProduct.inventory.message}
           </Text>
         )}
@@ -290,7 +290,7 @@ export function InventoryProductFormFields({
         )}
       />
       {errors.productCode && (
-        <Text style={{ color: 'red' }}>{errors.productCode.message}</Text>
+        <Text style={styles.errorMessage}>{errors.productCode.message}</Text>
       )}
     </View>
   );
@@ -347,5 +347,8 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
     fontWeight: '600',
+  },
+  errorMessage: {
+    color: 'red',
   },
 });

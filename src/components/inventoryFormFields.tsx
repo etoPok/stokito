@@ -35,7 +35,9 @@ export function InventoryFormFields({ editable }: FormFieldsProps) {
           )}
         />
         {errors.inventory?.name && (
-          <Text style={{ color: 'red' }}>{errors.inventory.name.message}</Text>
+          <Text style={styles.errorMessage}>
+            {errors.inventory.name.message}
+          </Text>
         )}
       </View>
 
@@ -58,7 +60,7 @@ export function InventoryFormFields({ editable }: FormFieldsProps) {
           )}
         />
         {errors.inventory?.location && (
-          <Text style={{ color: 'red' }}>
+          <Text style={styles.errorMessage}>
             {errors.inventory.location.message}
           </Text>
         )}
@@ -94,5 +96,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginVertical: 10,
+  },
+  errorMessage: {
+    color: 'red',
   },
 });

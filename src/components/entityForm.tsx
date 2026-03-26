@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState, useMemo } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import {
   useForm,
   FieldValues,
@@ -40,9 +40,9 @@ export function EntityForm<T extends FieldValues>({
   const [discardChanges, setDiscardChanges] = useState<number>(0);
 
   const submit = useCallback(
-    () => methods.handleSubmit(onValid, onInvalid),
+    () => methods.handleSubmit(onValid, onInvalid)(),
     [onValid, onInvalid, methods]
-  )();
+  );
 
   const isEdited = () =>
     JSON.stringify(initialValues) !== JSON.stringify(methods.getValues());
