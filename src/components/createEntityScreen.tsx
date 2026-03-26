@@ -6,7 +6,7 @@ import {
   ScreenRoute,
 } from '../types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRef } from 'react';
+import { useState } from 'react';
 import { View, Alert, ScrollView } from 'react-native';
 import { EntityForm } from './entityForm';
 import { FormHeader } from './formHeader';
@@ -19,7 +19,7 @@ type CreateEntityScreenProps<
   titleView: string;
   resolver: any;
 
-  getDefaultValues: (route: ScreenRoute<S>) => DefaultValues<T>;
+  getDefaultValues: (route: ScreenRoute<S>) => Promise<DefaultValues<T>>;
 
   isNew: (route: ScreenRoute<S>) => boolean;
 
@@ -39,7 +39,15 @@ export function createEntityScreen<
 
     const editable = config.isNew(route);
 
-    const originalValues = useRef(config.getDefaultValues(route));
+    const [originalValues, setOriginalValues] =
+      useState<DefaultValues<T> | null>(
+        ((): DefaultValues<T> | null => {
+          config.getDefaultValues(route).then((dv) => {
+            setOriginalValues(dv);
+          });
+          return null;
+        })()
+      );
 
     async function save(values: T) {
       await config.save(values, route);
@@ -49,6 +57,8 @@ export function createEntityScreen<
     function onInvalid(errors: any) {
       Alert.alert('Datos inválidos', 'Existen campos sin llenar');
     }
+
+    if (originalValues == null) return;
 
     return (
       <View
@@ -60,7 +70,7 @@ export function createEntityScreen<
         }}
       >
         <EntityForm
-          initialValues={originalValues.current}
+          initialValues={originalValues}
           editable={editable}
           onValid={save}
           onInvalid={onInvalid}

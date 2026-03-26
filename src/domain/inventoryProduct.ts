@@ -1,4 +1,5 @@
 import { Inventory } from './inventory';
+import { EntityResolver } from './resolver';
 
 export type InventoryProduct = {
   id: string | undefined;
@@ -22,10 +23,9 @@ type InventoryProductRequired = Pick<
   | 'isDiscontinued'
   | 'stok'
   | 'inventory'
-  | 'barcode'
 >;
 
-export const inventoryProductRequiredFieldsMessages: Record<
+const inventoryProductRequiredFieldsMessages: Record<
   keyof InventoryProductRequired,
   string
 > = {
@@ -36,5 +36,44 @@ export const inventoryProductRequiredFieldsMessages: Record<
   isDiscontinued: 'Debe especificar si el producto esta descontinuado',
   stok: 'El stok del producto es requerido',
   inventory: 'El inventario del producto es un campo requerido',
-  barcode: 'El código de barras del  producto es un campo requerido',
+};
+
+export const inventoryProductResolver: EntityResolver<InventoryProduct> = {
+  entityName: 'inventoryProduct',
+  resolver: (values: InventoryProduct | InventoryProduct[]) => {
+    const isEmpty = (value: unknown): boolean =>
+      value === undefined ||
+      value === null ||
+      (typeof value === 'string' && value.trim() === '') ||
+      (typeof value === 'number' && Number.isNaN(value));
+
+    type FieldErrors = Partial<
+      Record<keyof InventoryProduct, { type: string; message: string }>
+    >;
+
+    if (Array.isArray(values)) {
+      return {
+        type: 'manual',
+        message: '',
+      };
+    }
+
+    const errors: FieldErrors = {};
+
+    if (values && typeof values === 'object') {
+      const requiredKeys = Object.keys(
+        inventoryProductRequiredFieldsMessages
+      ) as (keyof typeof inventoryProductRequiredFieldsMessages)[];
+
+      for (const key of requiredKeys) {
+        if (isEmpty(values[key])) {
+          errors[key] = {
+            type: 'manual',
+            message: inventoryProductRequiredFieldsMessages[key],
+          };
+        }
+      }
+    }
+    return errors;
+  },
 };

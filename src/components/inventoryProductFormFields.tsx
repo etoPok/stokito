@@ -11,10 +11,17 @@ import { AppAccordion, appAccordionStyles } from './appAccordion';
 import { InventoryProduct } from '../domain/inventoryProduct';
 import { FormFieldsProps } from './entityForm';
 import { useInventories } from '../hooks/inventoryContext';
-import { SelectBarcode } from './selectBarcode';
 import { useTypedNavigation } from '../types';
-import { Barcode } from './barcode';
-import { detectBarcodeType, toBarcodeFormat } from '../utils/barcode';
+import { ProductCode } from '../domain/productCode';
+import { useEntityForm } from '../hooks/entityFormContext';
+import { CardCarousel } from './cardCarousel';
+import { HandleCode } from './handleCode';
+import { v4 as uuid } from 'uuid';
+
+export type InventoryProductFormFieldType = {
+  inventoryProduct: InventoryProduct;
+  productCode: ProductCode[];
+};
 
 export function InventoryProductFormFields({
   editable,
@@ -24,7 +31,8 @@ export function InventoryProductFormFields({
     control,
     formState: { errors },
     getValues,
-  } = useFormContext<InventoryProduct>();
+  } = useFormContext<InventoryProductFormFieldType>();
+  const { editableEntity } = useEntityForm();
   const { inventories } = useInventories();
   const navigation = useTypedNavigation<'InventoryProductScreen'>();
 
@@ -33,13 +41,13 @@ export function InventoryProductFormFields({
       <View style={styles.field}>
         <Controller
           control={control}
-          name="name"
+          name="inventoryProduct.name"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Nombre</Text>
               <TextInput
                 style={styles.input}
-                value={getValues().name}
+                value={getValues().inventoryProduct.name}
                 placeholder="Nombre del producto"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}
@@ -48,23 +56,25 @@ export function InventoryProductFormFields({
             </>
           )}
         />
-        {errors.name && (
-          <Text style={{ color: 'red' }}>{errors.name.message}</Text>
+        {errors.inventoryProduct?.name && (
+          <Text style={{ color: 'red' }}>
+            {errors.inventoryProduct.name.message}
+          </Text>
         )}
       </View>
 
       <View style={styles.field}>
         <Controller
           control={control}
-          name="costPrice"
+          name="inventoryProduct.costPrice"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Costo de producto</Text>
               <TextInput
                 style={styles.input}
                 value={
-                  getValues().costPrice !== undefined
-                    ? String(getValues().costPrice)
+                  getValues().inventoryProduct.costPrice !== undefined
+                    ? String(getValues().inventoryProduct.costPrice)
                     : undefined
                 }
                 keyboardType="numeric"
@@ -76,23 +86,25 @@ export function InventoryProductFormFields({
             </>
           )}
         />
-        {errors.costPrice && (
-          <Text style={{ color: 'red' }}>{errors.costPrice.message}</Text>
+        {errors.inventoryProduct?.costPrice && (
+          <Text style={{ color: 'red' }}>
+            {errors.inventoryProduct.costPrice.message}
+          </Text>
         )}
       </View>
 
       <View style={styles.field}>
         <Controller
           control={control}
-          name="salePrice"
+          name="inventoryProduct.salePrice"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Precio de venta</Text>
               <TextInput
                 style={styles.input}
                 value={
-                  getValues().salePrice !== undefined
-                    ? String(getValues().salePrice)
+                  getValues().inventoryProduct.salePrice !== undefined
+                    ? String(getValues().inventoryProduct.salePrice)
                     : undefined
                 }
                 keyboardType="numeric"
@@ -104,23 +116,25 @@ export function InventoryProductFormFields({
             </>
           )}
         />
-        {errors.salePrice && (
-          <Text style={{ color: 'red' }}>{errors.salePrice.message}</Text>
+        {errors.inventoryProduct?.salePrice && (
+          <Text style={{ color: 'red' }}>
+            {errors.inventoryProduct.salePrice.message}
+          </Text>
         )}
       </View>
 
       <View style={styles.field}>
         <Controller
           control={control}
-          name="stok"
+          name="inventoryProduct.stok"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Stock</Text>
               <TextInput
                 style={styles.input}
                 value={
-                  getValues().stok !== undefined
-                    ? String(getValues().stok)
+                  getValues().inventoryProduct.stok !== undefined
+                    ? String(getValues().inventoryProduct.stok)
                     : undefined
                 }
                 keyboardType="numeric"
@@ -132,21 +146,23 @@ export function InventoryProductFormFields({
             </>
           )}
         />
-        {errors.stok && (
-          <Text style={{ color: 'red' }}>{errors.stok.message}</Text>
+        {errors.inventoryProduct?.stok && (
+          <Text style={{ color: 'red' }}>
+            {errors.inventoryProduct.stok.message}
+          </Text>
         )}
       </View>
 
       <View style={styles.field}>
         <Controller
           control={control}
-          name="description"
+          name="inventoryProduct.description"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Descripción</Text>
               <TextInput
                 style={[styles.input, styles.multiline]}
-                value={getValues().description}
+                value={getValues().inventoryProduct.description}
                 placeholder="Descripción del producto"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}
@@ -162,12 +178,12 @@ export function InventoryProductFormFields({
         <Text style={styles.label}>Bodega</Text>
         <Controller
           control={control}
-          name="inventory"
+          name="inventoryProduct.inventory"
           render={({ field: { onChange } }) => (
             <AppAccordion
               title={
-                getValues().inventory !== undefined
-                  ? getValues().inventory!.name
+                getValues().inventoryProduct.inventory !== undefined
+                  ? getValues().inventoryProduct.inventory!.name
                   : 'Seleccionar inventario'
               }
               titleStyle={appAccordionStyles.buttonText}
@@ -196,54 +212,85 @@ export function InventoryProductFormFields({
             </AppAccordion>
           )}
         />
-        {errors.inventory && (
-          <Text style={{ color: 'red' }}>{errors.inventory.message}</Text>
+        {errors.inventoryProduct?.inventory && (
+          <Text style={{ color: 'red' }}>
+            {errors.inventoryProduct.inventory.message}
+          </Text>
         )}
       </View>
 
-      {isNew ? (
-        <>
+      {!isNew && (
+        <View style={styles.switchRow}>
           <Controller
             control={control}
-            name="barcode"
+            name="inventoryProduct.isDiscontinued"
             render={({ field: { onChange } }) => (
-              <SelectBarcode
-                navigation={navigation}
-                onChange={(barcode) => {
-                  onChange(barcode);
-                }}
-              ></SelectBarcode>
+              <>
+                <Text style={styles.label}>Descontinuado</Text>
+                <Switch
+                  value={getValues().inventoryProduct.isDiscontinued}
+                  onValueChange={(value) => onChange(value)}
+                  disabled={!editableEntity}
+                />
+              </>
             )}
           />
-          {errors.barcode && (
-            <Text style={{ color: 'red' }}>{errors.barcode.message}</Text>
-          )}
-        </>
-      ) : (
-        <>
-          <View style={styles.switchRow}>
-            <Controller
-              control={control}
-              name="isDiscontinued"
-              render={({ field: { onChange } }) => (
-                <>
-                  <Text style={styles.label}>Descontinuado</Text>
-                  <Switch
-                    value={getValues().isDiscontinued}
-                    onValueChange={(value) => onChange(value)}
-                    disabled={!editable}
-                  />
-                </>
-              )}
-            />
-          </View>
-          <View style={styles.barcodeContainer}>
-            <Barcode
-              barcode={getValues().barcode!}
-              format={toBarcodeFormat(detectBarcodeType(getValues().barcode!))}
-            />
-          </View>
-        </>
+        </View>
+      )}
+
+      <Controller
+        control={control}
+        name="productCode"
+        render={({ field: { onChange } }) => (
+          <CardCarousel
+            data={getValues().productCode}
+            renderItem={(item: ProductCode | null) => (
+              <HandleCode
+                navigation={navigation}
+                code={item?.code}
+                handle={editableEntity}
+                handleChange={(code, codeType) => {
+                  if (getValues().productCode.length === 0) {
+                    onChange([
+                      ...getValues().productCode,
+                      {
+                        id: uuid(),
+                        code: code,
+                        codeType: codeType,
+                        isPrimary: true,
+                      } satisfies ProductCode,
+                    ]);
+                    return;
+                  }
+                  if (item == null) return;
+                  item.code = code;
+                  item.codeType = codeType;
+                  onChange([...getValues().productCode]);
+                }}
+                handleAdd={(code, codeType) => {
+                  onChange([
+                    ...getValues().productCode,
+                    {
+                      id: uuid(),
+                      code: code,
+                      codeType: codeType,
+                      isPrimary: getValues().productCode.length === 0,
+                    } satisfies ProductCode,
+                  ]);
+                }}
+                handleRemove={() => {
+                  const newProductCode = getValues().productCode.filter(
+                    (pc) => pc.id !== item?.id
+                  );
+                  if (newProductCode) onChange(newProductCode);
+                }}
+              />
+            )}
+          />
+        )}
+      />
+      {errors.productCode && (
+        <Text style={{ color: 'red' }}>{errors.productCode.message}</Text>
       )}
     </View>
   );

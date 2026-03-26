@@ -8,8 +8,7 @@ interface StokitoDatabase {
     costPrice: number,
     description: string | undefined,
     isDiscontinued: boolean,
-    createdAt: string,
-    sku: string | undefined
+    createdAt: string
   ): Promise<string>;
   removeProduct(id: string): Promise<number>;
   findProduct(id: string): Promise<any>;
@@ -45,6 +44,16 @@ interface StokitoDatabase {
     isVoided: boolean
   ): Promise<string>;
   fetchAllSaleDetails(): Promise<any[]>;
+
+  createProductCode(
+    id: string,
+    productId: string,
+    code: string,
+    codeType: string,
+    isPrimary: boolean
+  ): Promise<string>;
+  fetchProductByCode(code: string): Promise<any>;
+  fetchProductCodes(productId: string): Promise<any[]>;
 }
 
 class ApiStokitoDatabase implements StokitoDatabase {
@@ -55,23 +64,21 @@ class ApiStokitoDatabase implements StokitoDatabase {
     costPrice: number,
     description: string | undefined,
     isDiscontinued: boolean,
-    createdAt: string,
-    sku: string | undefined
+    createdAt: string
   ): Promise<string> {
     const db = (await DB.getInstance('')).connection;
     // Using throw makes the async function return a rejected promise which is then handled by a try-catch.
     // result -> resusable SQL statment
     const result = await db.runAsync(
       `
-        INSERT INTO product_definition (id, name, sale_price, cost_price, sku, description, is_discontinued, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+        INSERT INTO product_definition (id, name, sale_price, cost_price, description, is_discontinued, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?);
       `,
       [
         id,
         name,
         salePrice,
         costPrice,
-        sku === undefined ? null : sku,
         description === undefined ? null : description,
         Number(isDiscontinued),
         createdAt,
@@ -211,7 +218,6 @@ class ApiStokitoDatabase implements StokitoDatabase {
       SELECT
         pd.id,
         pd.name,
-        pd.sku,
         pd.sale_price,
         pd.cost_price,
         pd.is_discontinued,
@@ -219,8 +225,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
         ii.created_at,
         ii.stock
       FROM inventory_item ii
-      jOIN product_definition pd
-        ON pd.id = ii.product_definition_id
+      JOIN product_definition pd ON pd.id = ii.product_definition_id
       WHERE ii.inventory_id = ?;
     `,
       [inventoryId]
@@ -294,6 +299,56 @@ class ApiStokitoDatabase implements StokitoDatabase {
       []
     );
     return results;
+  }
+
+  async createProductCode(
+    id: string,
+    productId: string,
+    code: string,
+    codeType: string,
+    isPrimary: boolean
+  ): Promise<any> {
+    const db = (await DB.getInstance('')).connection;
+    const result = await db.runAsync(
+      `
+      INSERT INTO product_code (id, product_id, code, code_type, is_primary)
+      VALUES (?, ?, ?, ?, ?);
+    `,
+      [id, productId, code, codeType, Number(isPrimary)]
+    );
+    if (result.changes !== 1) {
+      throw new Error('Unexpected number of affected rows during insertion');
+    }
+    return id;
+  }
+
+  async fetchProductByCode(code: string): Promise<any> {
+    const db = (await DB.getInstance('')).connection;
+    const result = await db.getFirstAsync(
+      `
+      SELECT pd.*
+      FROM product_definition pd
+      JOIN product_code pc
+        ON pd.id = pc.product_id
+      WHERE pc.code = ?;
+    `,
+      [code]
+    );
+    return result;
+  }
+
+  async fetchProductCodes(productId: string): Promise<any[]> {
+    const db = (await DB.getInstance('')).connection;
+    const rows = await db.getAllAsync(
+      `
+      SELECT id, code, code_type, is_primary
+      FROM product_code
+      WHERE product_id = ?
+      ORDER BY is_primary DESC;
+    `,
+      [productId]
+    );
+    return rows;
   }
 }
 

@@ -1,17 +1,13 @@
 import { BarcodeCreatorView } from 'react-native-barcode-creator';
 import { View, Text, StyleSheet } from 'react-native';
-import { ReactNode } from 'react';
 
-export function Barcode({
-  barcode,
-  format,
-  children,
-}: {
+type BarcodeProps = {
   barcode: string;
   format: any;
-  children?: ReactNode;
-}) {
-  if (barcode == null) {
+};
+
+export function Barcode({ barcode, format }: BarcodeProps) {
+  if (barcode == null || format == null) {
     return (
       <View style={styles.card}>
         <Text style={styles.barcodeText}> Sin barcode </Text>
@@ -28,16 +24,14 @@ export function Barcode({
         format={format}
         style={styles.barcode}
       />
-
       <Text style={styles.barcodeText}>{barcode}</Text>
-      {children}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    width: '100%',
+    width: 340,
     maxWidth: 360,
     backgroundColor: '#0f172a',
     borderRadius: 16,
@@ -59,5 +53,18 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     fontSize: 14,
     letterSpacing: 1,
+  },
+
+  topContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+
+  bottomContainer: {
+    padding: 10,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
 });

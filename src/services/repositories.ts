@@ -4,6 +4,7 @@ import { Product } from '../domain/product';
 import { Sale } from '../domain/sale';
 import { SaleDatail, SaleDetailsByProduct } from '../domain/saleDetails';
 import { InventoryProduct } from '../domain/inventoryProduct';
+import { ProductCode } from '../domain/productCode';
 
 class Repository {
   // PRODUCT
@@ -14,7 +15,7 @@ class Repository {
     costPrice: number,
     description: string | undefined,
     isDiscontinued: boolean,
-    sku: string | undefined
+    productCodes: ProductCode[]
   ): Promise<Product> {
     const createdAt = new Date().toISOString();
     await stokitoDB.addProduct(
@@ -24,20 +25,31 @@ class Repository {
       costPrice,
       description,
       isDiscontinued,
-      createdAt,
-      sku
+      createdAt
     );
-    const product: Product = {
+    try {
+      for (const pc of productCodes) {
+        await this.createProductCode(
+          pc.id,
+          id,
+          pc.code,
+          pc.codeType,
+          pc.isPrimary
+        );
+      }
+    } catch (error) {
+      await stokitoDB.removeProduct(id);
+      throw error;
+    }
+    return {
       id: id,
       name: name,
       salePrice: salePrice,
       costPrice: costPrice,
       description: description,
       isDiscontinued: isDiscontinued,
-      barcode: sku,
       createdAt: createdAt,
-    };
-    return product;
+    } satisfies Product;
   }
 
   async getAllProducts(): Promise<Product[]> {
@@ -52,7 +64,6 @@ class Repository {
         costPrice: r.cost_price,
         description: r.description,
         isDiscontinued: r.is_discontinued,
-        barcode: r.sku,
         createdAt: r.created_at,
       };
       products.push(product);
@@ -69,7 +80,6 @@ class Repository {
       costPrice: row.cost_price,
       description: row.description,
       isDiscontinued: row.is_discontinued,
-      barcode: row.sku,
       createdAt: row.created_at,
     };
     return product;
@@ -146,9 +156,9 @@ class Repository {
     costPrice: number,
     description: string | undefined,
     isDiscontinued: boolean,
-    sku: string | undefined,
     stock: number,
-    inventoryId: string
+    inventoryId: string,
+    productCodes: ProductCode[]
   ): Promise<Product> {
     const product = await this.setProduct(
       id,
@@ -157,9 +167,9 @@ class Repository {
       costPrice,
       description,
       isDiscontinued,
-      sku
+      productCodes
     );
-    await this.setInventoryItem(inventoryId, product.id, stock);
+    await this.setInventoryItem(inventoryId, id, stock);
     return product;
   }
 
@@ -182,7 +192,6 @@ class Repository {
         costPrice: r.cost_price,
         description: r.description,
         isDiscontinued: r.is_discontinued,
-        barcode: r.sku,
         createdAt: r.created_at,
         stok: r.stock,
         inventory: inventory,
@@ -273,6 +282,49 @@ class Repository {
         );
       }
     }
+  }
+
+  // PRODUCT CODE
+
+  async createProductCode(
+    id: string,
+    productId: string,
+    code: string,
+    codeType: string,
+    isPrimary: boolean
+  ): Promise<ProductCode> {
+    await stokitoDB.createProductCode(id, productId, code, codeType, isPrimary);
+    return {
+      id: id,
+      code: code,
+      codeType: codeType,
+      isPrimary: isPrimary,
+    } satisfies ProductCode;
+  }
+
+  async fetchProductByCode(code: string): Promise<Product> {
+    const row = await stokitoDB.fetchProductByCode(code);
+    return {
+      id: row.id,
+      name: row.name,
+      costPrice: row.cost_price,
+      salePrice: row.sale_price,
+      isDiscontinued: row.is_discontinued,
+      description: row.description,
+      createdAt: row.created_at,
+    } satisfies Product;
+  }
+
+  async fetchProductCodes(productId: string): Promise<ProductCode[]> {
+    const rows = await stokitoDB.fetchProductCodes(productId);
+    return rows.map<ProductCode>((r) => {
+      return {
+        id: r.id,
+        code: r.code,
+        codeType: r.code_type,
+        isPrimary: r.is_prumary,
+      } satisfies ProductCode;
+    });
   }
 }
 

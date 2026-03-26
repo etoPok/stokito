@@ -27,12 +27,22 @@ class Database {
       CREATE TABLE IF NOT EXISTS product_definition (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
-        sku TEXT UNIQUE,
         description TEXT,
         is_discontinued INTEGER DEFAULT 0,
         sale_price INTEGER NOT NULL,
         cost_price INTEGER NOT NULL,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS product_code (
+        id TEXT PRIMARY KEY,
+        product_id TEXT NOT NULL,
+        code TEXT NOT NULL,
+        code_type TEXT NOT NULL,
+        is_primary INTEGER NOT NULL CHECK(is_primary IN (0, 1)) DEFAULT 0,
+
+        UNIQUE(code),
+        FOREIGN KEY (product_id) REFERENCES product_definition(id) ON DELETE CASCADE
       );
 
       CREATE TABLE IF NOT EXISTS inventory (

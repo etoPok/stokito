@@ -3,25 +3,29 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { FormFieldsProps } from './entityForm';
 import { Inventory } from '../domain/inventory';
 
+export type InventoryFormFIeldsType = {
+  inventory: Inventory;
+};
+
 export function InventoryFormFields({ editable }: FormFieldsProps) {
   const {
     control,
     formState: { errors },
     getValues,
-  } = useFormContext<Inventory>();
+  } = useFormContext<InventoryFormFIeldsType>();
 
   return (
     <>
       <View style={styles.field}>
         <Controller
           control={control}
-          name="name"
+          name="inventory.name"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Nombre</Text>
               <TextInput
                 style={styles.input}
-                value={getValues().name}
+                value={getValues().inventory.name}
                 placeholder="Nombre del producto"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}
@@ -30,21 +34,21 @@ export function InventoryFormFields({ editable }: FormFieldsProps) {
             </>
           )}
         />
-        {errors.name && (
-          <Text style={{ color: 'red' }}>{errors.name.message}</Text>
+        {errors.inventory?.name && (
+          <Text style={{ color: 'red' }}>{errors.inventory.name.message}</Text>
         )}
       </View>
 
       <View style={styles.field}>
         <Controller
           control={control}
-          name="location"
+          name="inventory.location"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Ubicación</Text>
               <TextInput
                 style={styles.input}
-                value={getValues().location}
+                value={getValues().inventory.location}
                 placeholder="Ubicación de inventario"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}
@@ -53,8 +57,10 @@ export function InventoryFormFields({ editable }: FormFieldsProps) {
             </>
           )}
         />
-        {errors.location && (
-          <Text style={{ color: 'red' }}>{errors.location.message}</Text>
+        {errors.inventory?.location && (
+          <Text style={{ color: 'red' }}>
+            {errors.inventory.location.message}
+          </Text>
         )}
       </View>
     </>
