@@ -300,12 +300,6 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
   },
-  barcodeContainer: {
-    flex: 1,
-    backgroundColor: 'black',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   field: {
     marginBottom: 16,
   },
@@ -332,21 +326,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginVertical: 10,
-  },
-  footer: {
-    paddingTop: 12,
-    paddingBottom: 8,
-  },
-  saveButton: {
-    backgroundColor: '#4da6ff',
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: '#000',
-    fontSize: 16,
-    fontWeight: '600',
   },
   errorMessage: {
     color: 'red',

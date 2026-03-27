@@ -7,13 +7,13 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { RootStackParamList, ScreenNavigation } from '../types';
-import { requestBarcodeScanner } from '../services/barcodeScanner';
+import { requestCodeScanner } from '../services/codeScanner';
 import {
   detectBarcodeType,
   toBarcodeFormat,
   getBarcode,
 } from '../utils/barcode';
-import { Barcode } from './barcode';
+import { CardCode } from './cardCode';
 import { Ionicons } from '@expo/vector-icons';
 
 type Handle = (code: string, codeType: any) => void;
@@ -54,8 +54,8 @@ export function HandleCode<S extends keyof RootStackParamList>({
             pressed && styles.buttonPressed,
           ]}
           onPress={async () => {
-            navigation.navigate('BarcodeScannerScreen');
-            const _barcode = await requestBarcodeScanner();
+            navigation.navigate('CodeScannerScreen');
+            const _barcode = await requestCodeScanner();
             if (_barcode) {
               currentHandle.current(_barcode, detectBarcodeType(_barcode));
               setPick(false);
@@ -105,7 +105,7 @@ export function HandleCode<S extends keyof RootStackParamList>({
 
   return (
     <>
-      <Barcode barcode={code!} format={codeType.current} />
+      <CardCode code={code!} format={codeType.current} />
       {handle && (
         <View style={styles.handlerContainer}>
           {handleAdd && (

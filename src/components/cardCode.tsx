@@ -1,16 +1,16 @@
 import { BarcodeCreatorView } from 'react-native-barcode-creator';
 import { View, Text, StyleSheet } from 'react-native';
 
-type BarcodeProps = {
-  barcode: string;
+type CardCodeProps = {
+  code: string;
   format: any;
 };
 
-export function Barcode({ barcode, format }: BarcodeProps) {
-  if (barcode == null || format == null) {
+export function CardCode({ code, format }: CardCodeProps) {
+  if (code == null || format == null) {
     return (
       <View style={styles.card}>
-        <Text style={styles.barcodeText}> Sin barcode </Text>
+        <Text style={styles.codeText}> Sin código </Text>
       </View>
     );
   }
@@ -18,13 +18,13 @@ export function Barcode({ barcode, format }: BarcodeProps) {
   return (
     <View style={styles.card}>
       <BarcodeCreatorView
-        value={barcode}
+        value={code}
         background={'#FFFFFF'}
         foregroundColor={'#000000'}
         format={format}
-        style={styles.barcode}
+        style={styles.code}
       />
-      <Text style={styles.barcodeText}>{barcode}</Text>
+      <Text style={styles.codeText}>{code}</Text>
     </View>
   );
 }
@@ -42,14 +42,14 @@ const styles = StyleSheet.create({
     borderColor: '#1e293b',
   },
 
-  barcode: {
+  code: {
     width: 300,
     height: 120,
     backgroundColor: '#ffffff',
     borderRadius: 8,
   },
 
-  barcodeText: {
+  codeText: {
     color: '#94a3b8',
     fontSize: 14,
     letterSpacing: 1,

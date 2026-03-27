@@ -16,11 +16,11 @@ import ScannerMask from '../components/scannerMask';
 const SCAN_SIZE = 260;
 const RADIUS = 20;
 
-export function BarcodeScannerScreen() {
+export function CcodeScannerScreen() {
   const insets = useSafeAreaInsets();
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice('back');
-  const navigation = useTypedNavigation<'BarcodeScannerScreen'>();
+  const navigation = useTypedNavigation<'CodeScannerScreen'>();
   const isFocused = useIsFocused();
   const locked = useRef<boolean>(false);
 
@@ -30,7 +30,7 @@ export function BarcodeScannerScreen() {
       const value = codes[0].value;
       if (value == null) return;
       locked.current = true;
-      resolvePicker('barcodeScanner', value);
+      resolvePicker('codeScanner', value);
       navigation.goBack();
     },
     [locked.current]
