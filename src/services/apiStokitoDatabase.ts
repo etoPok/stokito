@@ -203,7 +203,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     const db = (await DB.getInstance('')).connection;
     const result = await db.runAsync(
       `
-      INSERT INTO inventory_item (inventory_id, product_definition_id, stock, created_at)
+      INSERT INTO inventory_product (inventory_id, product_definition_id, stock, created_at)
       VALUES (?, ?, ?, ?);
     `,
       [inventoryId, productId, stock, created_at]
@@ -224,7 +224,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
         pd.description,
         ii.created_at,
         ii.stock
-      FROM inventory_item ii
+      FROM inventory_product ii
       JOIN product_definition pd ON pd.id = ii.product_definition_id
       WHERE ii.inventory_id = ?;
     `,

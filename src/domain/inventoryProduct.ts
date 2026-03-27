@@ -4,7 +4,6 @@ import { EntityResolver } from './resolver';
 export type InventoryProduct = {
   id: string | undefined;
   name: string | undefined;
-  barcode: string | undefined;
   salePrice: number | undefined;
   costPrice: number | undefined;
   description: string | undefined;

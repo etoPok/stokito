@@ -52,7 +52,7 @@ class Database {
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
 
-      CREATE TABLE IF NOT EXISTS inventory_item (
+      CREATE TABLE IF NOT EXISTS inventory_product (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         inventory_id TEXT NOT NULL,
         product_definition_id TEXT NOT NULL,
