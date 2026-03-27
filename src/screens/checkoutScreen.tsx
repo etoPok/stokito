@@ -91,7 +91,7 @@ export function CheckoutScreen() {
 
       setScannerLocked(true);
       try {
-        const product = await repository.findProduct(code);
+        const product = await repository.fetchProductByCode(code);
         console.log(`Found product ${product.id}`);
         setScannedProduct(product);
       } catch (error) {
