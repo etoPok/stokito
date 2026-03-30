@@ -2,7 +2,7 @@ import { stokitoDB } from './apiStokitoDatabase';
 import { Inventory } from '../domain/inventory';
 import { Product } from '../domain/product';
 import { Sale } from '../domain/sale';
-import { SaleDatail, SaleDetailsByProduct } from '../domain/saleDetails';
+import { SaleDetail, SaleDetailsByProduct } from '../domain/saleDetails';
 import { InventoryProduct } from '../domain/inventoryProduct';
 import { ProductCode } from '../domain/productCode';
 
@@ -226,7 +226,7 @@ class Repository {
     price: number,
     quantity: number,
     subtotal: number
-  ): Promise<SaleDatail> {
+  ): Promise<SaleDetail> {
     await stokitoDB.addSaleDetail(
       id,
       saleId,
@@ -247,9 +247,9 @@ class Repository {
     };
   }
 
-  async fetchAllSaleDetails(): Promise<SaleDatail[]> {
+  async fetchAllSaleDetails(): Promise<SaleDetail[]> {
     const rows = await stokitoDB.fetchAllSaleDetails();
-    const saleDetails: SaleDatail[] = [];
+    const saleDetails: SaleDetail[] = [];
     rows.forEach((r) => {
       saleDetails.push({
         id: r.id,

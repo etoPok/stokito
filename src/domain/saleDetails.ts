@@ -1,4 +1,4 @@
-export type SaleDatail = {
+export type SaleDetail = {
   id: string;
   saleId: string;
   productName: string;
@@ -8,4 +8,4 @@ export type SaleDatail = {
   isVoided: boolean;
 };
 
-export type SaleDetailsByProduct = Record<string, SaleDatail>;
+export type SaleDetailsByProduct = Record<string, SaleDetail>;
