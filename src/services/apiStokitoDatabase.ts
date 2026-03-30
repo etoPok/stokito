@@ -334,6 +334,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     `,
       [code]
     );
+    if (result == null) throw new Error('Code not found');
     return result;
   }
 

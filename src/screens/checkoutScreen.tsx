@@ -2,20 +2,15 @@ import { Text, View, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTypedNavigation } from '../types';
 import { useCallback, useRef, useState } from 'react';
-import { AndroidCamera } from './../components/camera.android';
+import { CameraScanner } from './../components/cameraScanner.android';
 import repository from '../services/repositories';
-import ScannerMask from './../components/scannerMask';
 import { SaleDatail, SaleDetailsByProduct } from '../domain/saleDetails';
 import { Product } from '../domain/product';
 import { v4 as uuidv4 } from 'uuid';
 
-const SCAN_SIZE = 260;
-const RADIUS = 20;
-
 export function CheckoutScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useTypedNavigation<'CheckoutScreen'>();
-  const [scannerLocked, setScannerLocked] = useState(false);
   const saleDetails = useRef<SaleDetailsByProduct>({});
   const currentSaleDatail = useRef<SaleDatail | undefined>(undefined);
   const initializedSaleId = useRef<string | null>(null);
@@ -69,7 +64,6 @@ export function CheckoutScreen() {
   function processSaleDetail() {
     if (scannedProduct == null) return;
     if (initializedSaleId.current == null) {
-      // initiaze sale ID
       initializedSaleId.current = uuidv4();
     }
     const sd = getSaleDetail();
@@ -79,28 +73,18 @@ export function CheckoutScreen() {
 
     currentSaleDatail.current = sd;
     setScannedProduct(null);
-    setScannerLocked(false);
   }
 
-  const handleScan = useCallback(
-    async (code: string) => {
-      if (scannerLocked) {
-        console.log('scannerlocked');
-        return;
-      }
-
-      setScannerLocked(true);
-      try {
-        const product = await repository.fetchProductByCode(code);
-        console.log(`Found product ${product.id}`);
-        setScannedProduct(product);
-      } catch (error) {
-        console.log(error);
-      }
-      console.log(`QR scanned, value ${code}`);
-    },
-    [scannerLocked]
-  );
+  const onCodeScanned = useCallback(async (code: string) => {
+    try {
+      const product = await repository.fetchProductByCode(code);
+      console.log(`Found product ${product.id}`);
+      console.log(`Code scanned, value ${code}`);
+      setScannedProduct(product);
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
   return (
     <View
@@ -111,28 +95,24 @@ export function CheckoutScreen() {
         paddingTop: insets.top,
       }}
     >
-      <AndroidCamera onScan={handleScan} locked={scannerLocked}>
-        <ScannerMask scanSize={SCAN_SIZE} radius={RADIUS} />
-        <View style={styles.overlay}>
-          <View style={styles.header}>
-            <Pressable
-              style={styles.backButton}
-              onPress={() => {
-                navigation.goBack();
-              }}
-            >
-              <Text style={styles.backText}>Volver</Text>
-            </Pressable>
-            <View style={{ width: 60 }} />
-          </View>
-        </View>
-      </AndroidCamera>
-      <View>
+      <CameraScanner
+        onCodeScanned={onCodeScanned}
+        locked={scannedProduct != null}
+        onBack={navigation.goBack}
+      />
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          paddingBottom: insets.bottom + 16,
+          paddingHorizontal: 16,
+          gap: 12,
+        }}
+      >
         <Pressable
-          style={[
-            styles.button,
-            { bottom: insets.bottom, opacity: scannedProduct != null ? 1 : 0 },
-          ]}
+          style={[styles.button, { opacity: scannedProduct != null ? 1 : 0 }]}
           onPress={() => {
             processSaleDetail();
           }}
@@ -177,13 +157,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontSize: 16,
-  },
-  scanArea: {
-    width: SCAN_SIZE,
-    height: SCAN_SIZE,
-    borderWidth: 3,
-    borderColor: '#00FFAA',
-    borderRadius: 20,
   },
   header: {
     flexDirection: 'row',
