@@ -13,12 +13,13 @@ import { useCallback } from 'react';
 import { CameraScanner } from './../components/cameraScanner.android';
 import repository from '../services/repositories';
 import { useSale } from '../hooks/useSale';
+import { ensureCurrencyFormat } from '../utils/price';
 
 type ProductItemProps = {
   name: string;
   image: string;
   quantity: number;
-  subTotal: number;
+  subTotal: string;
   remove: () => void;
   onIncrease: () => void;
   onDecrease: () => void;
@@ -230,7 +231,7 @@ export function CheckoutScreen() {
               <ProductItem
                 name={saleDetail.productName}
                 quantity={saleDetail.quantity}
-                subTotal={saleDetail.subtotal}
+                subTotal={ensureCurrencyFormat(saleDetail.subtotal)}
                 image=""
                 remove={() => removeProduct(item)}
                 onIncrease={() => updateQuantity(item, 1)}
@@ -241,7 +242,9 @@ export function CheckoutScreen() {
         />
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Total {getTotal()}</Text>
+          <Text style={styles.footerText}>
+            Total {ensureCurrencyFormat(getTotal())}
+          </Text>
 
           {getSnapshot().saleId.current != null && (
             <Pressable onPress={handleFinishSale} style={styles.footerButton}>

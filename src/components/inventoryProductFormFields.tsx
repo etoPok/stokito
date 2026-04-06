@@ -17,6 +17,8 @@ import { useEntityForm } from '../hooks/entityFormContext';
 import { CardCarousel } from './cardCarousel';
 import { HandleCode } from './handleCode';
 import { v4 as uuid } from 'uuid';
+import { useState } from 'react';
+import { ensureCurrencyFormat, toUnits } from '../utils/price';
 
 export type InventoryProductFormFieldType = {
   inventoryProduct: InventoryProduct;
@@ -35,6 +37,9 @@ export function InventoryProductFormFields({
   const { editableEntity } = useEntityForm();
   const { inventories } = useInventories();
   const navigation = useTypedNavigation<'InventoryProductScreen'>();
+
+  const [costPriceText, setCostPriceText] = useState<string>('');
+  const [salePriceText, setSalePriceText] = useState<string>('');
 
   return (
     <View style={styles.container}>
@@ -72,15 +77,14 @@ export function InventoryProductFormFields({
               <Text style={styles.label}>Costo de producto</Text>
               <TextInput
                 style={styles.input}
-                value={
-                  getValues().inventoryProduct.costPrice !== undefined
-                    ? String(getValues().inventoryProduct.costPrice)
-                    : undefined
-                }
+                value={costPriceText}
                 keyboardType="numeric"
                 placeholder="Precio"
                 placeholderTextColor="#777"
-                onChangeText={(text) => onChange(text)}
+                onChangeText={(text) => {
+                  setCostPriceText(ensureCurrencyFormat(text));
+                  onChange(toUnits(text));
+                }}
                 editable={editable}
               />
             </>
@@ -102,15 +106,14 @@ export function InventoryProductFormFields({
               <Text style={styles.label}>Precio de venta</Text>
               <TextInput
                 style={styles.input}
-                value={
-                  getValues().inventoryProduct.salePrice !== undefined
-                    ? String(getValues().inventoryProduct.salePrice)
-                    : undefined
-                }
+                value={salePriceText}
                 keyboardType="numeric"
                 placeholder="Precio"
                 placeholderTextColor="#777"
-                onChangeText={(text) => onChange(text)}
+                onChangeText={(text) => {
+                  setSalePriceText(ensureCurrencyFormat(text));
+                  onChange(toUnits(text));
+                }}
                 editable={editable}
               />
             </>

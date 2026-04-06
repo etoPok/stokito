@@ -4,6 +4,7 @@ import { Sale } from '../domain/sale';
 import { useEffect, useState } from 'react';
 import repository from '../services/repositories';
 import { useTypedNavigation } from '../types';
+import { ensureCurrencyFormat } from '../utils/price';
 
 const dateFormater = Intl.DateTimeFormat('es-Es', {
   dateStyle: 'short',
@@ -45,7 +46,7 @@ export function SalesScreen() {
         </View>
         <View style={styles.row}>
           <Text style={styles.label}> Total </Text>
-          <Text style={styles.value}> {item.total} </Text>
+          <Text style={styles.value}> {ensureCurrencyFormat(item.total)} </Text>
         </View>
         <View style={styles.row}></View>
       </View>
