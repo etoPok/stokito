@@ -18,7 +18,7 @@ class Repository {
     productCodes: ProductCode[]
   ): Promise<Product> {
     const createdAt = new Date().toISOString();
-    await stokitoDB.addProduct(
+    await stokitoDB.createProduct(
       id,
       name,
       salePrice,
@@ -38,7 +38,7 @@ class Repository {
         );
       }
     } catch (error) {
-      await stokitoDB.removeProduct(id);
+      await stokitoDB.deleteProduct(id);
       throw error;
     }
     return {
@@ -72,7 +72,7 @@ class Repository {
   }
 
   async findProduct(id: string): Promise<Product> {
-    const row = await stokitoDB.findProduct(id);
+    const row = await stokitoDB.getProduct(id);
     const product: Product = {
       id: row.id,
       name: row.name,
@@ -86,7 +86,7 @@ class Repository {
   }
 
   async removeProduct(id: string): Promise<boolean> {
-    const changes = await stokitoDB.removeProduct(id);
+    const changes = await stokitoDB.deleteProduct(id);
     return changes === 1;
   }
 
@@ -97,7 +97,7 @@ class Repository {
     location: string
   ): Promise<Inventory> {
     const date = new Date().toISOString();
-    await stokitoDB.addInventory(id, name, location, date);
+    await stokitoDB.createInventory(id, name, location, date);
     const inventory: Inventory = { id, name, location, createdAt: date };
     return inventory;
   }
@@ -118,7 +118,7 @@ class Repository {
   }
 
   async findInventory(id: string): Promise<Inventory> {
-    const row = await stokitoDB.findInventory(id);
+    const row = await stokitoDB.getInventory(id);
     const inventory: Inventory = {
       id: row.id,
       name: row.name,
@@ -128,7 +128,7 @@ class Repository {
     return inventory;
   }
   async removeInventory(id: string): Promise<boolean> {
-    const changes = await stokitoDB.removeInventory(id);
+    const changes = await stokitoDB.deleteInventory(id);
     return changes === 1;
   }
 
@@ -140,7 +140,7 @@ class Repository {
     stock: number
   ): Promise<number | null> {
     const created_at = new Date().toISOString();
-    const result = await stokitoDB.addProductToInventory(
+    const result = await stokitoDB.createInventoryProduct(
       productId,
       inventoryId,
       stock,
@@ -174,7 +174,7 @@ class Repository {
   }
 
   async getInventoryProducts(inventoryId: string): Promise<InventoryProduct[]> {
-    const row = await stokitoDB.findInventory(inventoryId);
+    const row = await stokitoDB.getInventory(inventoryId);
     const inventory: Inventory = {
       id: row.id,
       name: row.name,
@@ -203,7 +203,7 @@ class Repository {
   // SALE
 
   async addSale(id: string, date: string, total: number): Promise<Sale> {
-    const resultId = await stokitoDB.addSale(id, date, total);
+    const resultId = await stokitoDB.createSale(id, date, total);
     return { id: resultId, date: date, total: total };
   }
 
@@ -227,7 +227,7 @@ class Repository {
     quantity: number,
     subtotal: number
   ): Promise<SaleDetail> {
-    await stokitoDB.addSaleDetail(
+    await stokitoDB.createSaleDetail(
       id,
       saleId,
       productName,
@@ -248,7 +248,7 @@ class Repository {
   }
 
   async fetchAllSaleDetails(): Promise<SaleDetail[]> {
-    const rows = await stokitoDB.fetchAllSaleDetails();
+    const rows = await stokitoDB.getAllSaleDetails();
     const saleDetails: SaleDetail[] = [];
     rows.forEach((r) => {
       saleDetails.push({
@@ -303,7 +303,7 @@ class Repository {
   }
 
   async fetchProductByCode(code: string): Promise<Product> {
-    const row = await stokitoDB.fetchProductByCode(code);
+    const row = await stokitoDB.getProductByCode(code);
     return {
       id: row.id,
       name: row.name,
@@ -316,7 +316,7 @@ class Repository {
   }
 
   async fetchProductCodes(productId: string): Promise<ProductCode[]> {
-    const rows = await stokitoDB.fetchProductCodes(productId);
+    const rows = await stokitoDB.getProductCodes(productId);
     return rows.map<ProductCode>((r) => {
       return {
         id: r.id,

@@ -1,7 +1,7 @@
 import DB from '../services/dataBase';
 
 interface StokitoDatabase {
-  addProduct(
+  createProduct(
     id: string,
     name: string,
     salePrice: number,
@@ -10,31 +10,53 @@ interface StokitoDatabase {
     isDiscontinued: boolean,
     createdAt: string
   ): Promise<string>;
-  removeProduct(id: string): Promise<number>;
-  findProduct(id: string): Promise<any>;
+  deleteProduct(id: string): Promise<number>;
+  getProduct(id: string): Promise<any>;
   getAllProducts(): Promise<any[]>;
+  updateProduct(
+    id: string,
+    name?: string,
+    description?: string,
+    is_discontinued?: number,
+    sale_price?: number,
+    cost_price?: number
+  ): Promise<number>;
 
-  addInventory(
+  createInventory(
     id: string,
     name: string,
     location: string,
     createdAt: string
   ): Promise<string>;
-  removeInventory(id: string): Promise<number>;
-  findInventory(id: string): Promise<any>;
+  deleteInventory(id: string): Promise<number>;
+  getInventory(id: string): Promise<any>;
   getAllInventories(): Promise<any[]>;
+  updateInventory(
+    id: string,
+    name?: string,
+    location?: string
+  ): Promise<number>;
 
-  addProductToInventory(
+  createInventoryProduct(
     productId: string,
     inventoryId: string,
     stock: number,
     created_at: string
   ): Promise<number>;
   getInventoryProducts(inventoryId: string): Promise<any[]>;
+  updateInventoryProduct(
+    id: string,
+    name?: string,
+    description?: string,
+    is_discontinued?: number,
+    sale_price?: number,
+    cost_price?: number,
+    stock?: number
+  ): Promise<number>;
 
-  addSale(id: string, date: string, total: number): Promise<string>;
+  createSale(id: string, date: string, total: number): Promise<string>;
   getAllSales(): Promise<any[]>;
-  addSaleDetail(
+  createSaleDetail(
     id: string,
     saleId: string,
     productName: string,
@@ -43,7 +65,7 @@ interface StokitoDatabase {
     quantity: number,
     isVoided: boolean
   ): Promise<string>;
-  fetchAllSaleDetails(): Promise<any[]>;
+  getAllSaleDetails(): Promise<any[]>;
 
   createProductCode(
     id: string,
@@ -52,12 +74,19 @@ interface StokitoDatabase {
     codeType: string,
     isPrimary: boolean
   ): Promise<string>;
-  fetchProductByCode(code: string): Promise<any>;
-  fetchProductCodes(productId: string): Promise<any[]>;
+  deleteProductCode(id: string): Promise<number>;
+  updateProductCode(
+    id: string,
+    code: string,
+    codeType: string,
+    isPrimary?: boolean
+  ): Promise<number>;
+  getProductByCode(code: string): Promise<any>;
+  getProductCodes(productId: string): Promise<any[]>;
 }
 
 class ApiStokitoDatabase implements StokitoDatabase {
-  async addProduct(
+  async createProduct(
     id: string,
     name: string,
     salePrice: number,
@@ -69,7 +98,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     const db = (await DB.getInstance('')).connection;
     // Using throw makes the async function return a rejected promise which is then handled by a try-catch.
     // result -> resusable SQL statment
-    const result = await db.runAsync(
+    await db.runAsync(
       `
         INSERT INTO product_definition (id, name, sale_price, cost_price, description, is_discontinued, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?);
@@ -79,35 +108,34 @@ class ApiStokitoDatabase implements StokitoDatabase {
         name,
         salePrice,
         costPrice,
-        description === undefined ? null : description,
+        description ?? null,
         Number(isDiscontinued),
         createdAt,
       ]
     );
-    if (result.changes !== 1) {
-      throw new Error('Unexpected number of affected rows during insertion');
-    }
     return id;
   }
 
-  async removeProduct(id: string): Promise<number> {
+  async deleteProduct(id: string): Promise<number> {
     const db = (await DB.getInstance('')).connection;
+
     const result = await db.runAsync(
-      `
-        DELETE FROM product_definition WHERE id = ?;
-      `,
+      `DELETE FROM product_definition WHERE id = ?`,
       [id]
     );
+
     if (result.changes === 0) {
-      throw new Error('Product ${id} does not exist or was already removed');
+      throw new Error('DELETE_PRODUCT_NOT_FOUND');
     }
+
     if (result.changes > 1) {
-      throw new Error('Multiple products deleted for id ${id}');
+      throw new Error('DELETE_PRODUCT_UNEXPECTED_MULTIPLE_CHANGES');
     }
+
     return result.changes;
   }
 
-  async findProduct(id: string): Promise<any> {
+  async getProduct(id: string): Promise<any> {
     const db = (await DB.getInstance('')).connection;
     const row = await db.getFirstAsync(
       `
@@ -116,7 +144,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
       [id]
     );
     if (!row) {
-      throw new Error(`Row not found for id ${id}`);
+      throw new Error(`GET_PRODUCT_NOT_FOUND`);
     }
     return row;
   }
@@ -129,47 +157,104 @@ class ApiStokitoDatabase implements StokitoDatabase {
       `,
       []
     );
-    return rows;
+    return rows ?? [];
   }
 
-  async addInventory(
+  async updateProduct(
+    id: string,
+    name?: string,
+    description?: string,
+    is_discontinued?: number,
+    sale_price?: number,
+    cost_price?: number
+  ): Promise<number> {
+    const db = (await DB.getInstance('')).connection;
+
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    if (name !== undefined) {
+      fields.push('name = ?');
+      values.push(name);
+    }
+
+    if (description !== undefined) {
+      fields.push('description = ?');
+      values.push(description);
+    }
+
+    if (is_discontinued !== undefined) {
+      fields.push('is_discontinued = ?');
+      values.push(is_discontinued);
+    }
+
+    if (sale_price !== undefined) {
+      fields.push('sale_price = ?');
+      values.push(sale_price);
+    }
+
+    if (cost_price !== undefined) {
+      fields.push('cost_price = ?');
+      values.push(cost_price);
+    }
+
+    if (fields.length === 0) {
+      return 0;
+    }
+
+    values.push(id);
+
+    const query = `
+    UPDATE product_definition
+    SET ${fields.join(', ')}
+    WHERE id = ?
+  `;
+
+    const result = await db.runAsync(query, values);
+
+    if (result.changes === 0) {
+      throw new Error('UPDATE_PRODUCT_NO_CHANGES');
+    }
+
+    return result.changes;
+  }
+
+  async createInventory(
     id: string,
     name: string,
     location: string,
     createdAt: string
   ): Promise<string> {
     const db = (await DB.getInstance('')).connection;
-    const result = await db.runAsync(
+    await db.runAsync(
       `
       INSERT INTO inventory (id, name, location, created_at)
       VALUES (?, ?, ?, ?);
     `,
       [id, name, location, createdAt]
     );
-    if (result.changes !== 1) {
-      throw new Error('Unexpected number of affected rows during insertion');
-    }
     return id;
   }
 
-  async removeInventory(id: string): Promise<number> {
+  async deleteInventory(id: string): Promise<number> {
     const db = (await DB.getInstance('')).connection;
-    const result = await db.runAsync(
-      `
-      DELETE FROM inventory WHERE id = ?;
-    `,
-      [id]
-    );
+
+    const result = await db.runAsync(`DELETE FROM inventory WHERE id = ?`, [
+      id,
+    ]);
+
     if (result.changes === 0) {
-      throw new Error('Inventory ${id} does not exist or was already removed');
+      throw new Error('DELETE_INVENTORY_NOT_FOUND');
     }
+
     if (result.changes > 1) {
-      throw new Error('Multiple inventories deleted for id ${id}');
+      throw new Error('DELETE_INVENTORY_UNEXPECTED_MULTIPLE_CHANGES');
     }
+
     return result.changes;
   }
 
-  async findInventory(id: string): Promise<any> {
+  async getInventory(id: string): Promise<any> {
     const db = (await DB.getInstance('')).connection;
     const row = await db.getFirstAsync(
       `
@@ -178,7 +263,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
       [id]
     );
     if (!row) {
-      throw new Error('Row not found for id ${id}');
+      throw new Error('GET_INVENTORY_NOT_FOUND');
     }
     return row;
   }
@@ -191,10 +276,51 @@ class ApiStokitoDatabase implements StokitoDatabase {
       `,
       []
     );
-    return rows;
+    return rows ?? [];
   }
 
-  async addProductToInventory(
+  async updateInventory(
+    id: string,
+    name?: string,
+    location?: string
+  ): Promise<number> {
+    const db = (await DB.getInstance('')).connection;
+
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    if (name !== undefined) {
+      fields.push('name = ?');
+      values.push(name);
+    }
+
+    if (location !== undefined) {
+      fields.push('location = ?');
+      values.push(location);
+    }
+
+    if (fields.length === 0) {
+      return 0;
+    }
+
+    values.push(id);
+
+    const query = `
+    UPDATE inventory
+    SET ${fields.join(', ')}
+    WHERE id = ?
+  `;
+
+    const result = await db.runAsync(query, values);
+
+    if (result.changes === 0) {
+      throw new Error('UPDATE_INVENTORY_NO_CHANGES');
+    }
+
+    return result.changes;
+  }
+
+  async createInventoryProduct(
     productId: string,
     inventoryId: string,
     stock: number,
@@ -230,21 +356,83 @@ class ApiStokitoDatabase implements StokitoDatabase {
     `,
       [inventoryId]
     );
-    return rows;
+    return rows ?? [];
   }
 
-  async addSale(id: string, date: string, total: number): Promise<string> {
+  async updateInventoryProduct(
+    id: string,
+    name?: string,
+    description?: string,
+    is_discontinued?: number,
+    sale_price?: number,
+    cost_price?: number,
+    stock?: number
+  ): Promise<number> {
     const db = (await DB.getInstance('')).connection;
-    const result = await db.runAsync(
+
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    if (name !== undefined) {
+      fields.push('name = ?');
+      values.push(name);
+    }
+
+    if (description !== undefined) {
+      fields.push('description = ?');
+      values.push(description);
+    }
+
+    if (is_discontinued !== undefined) {
+      fields.push('is_discontinued = ?');
+      values.push(is_discontinued);
+    }
+
+    if (sale_price !== undefined) {
+      fields.push('sale_price = ?');
+      values.push(sale_price);
+    }
+
+    if (cost_price !== undefined) {
+      fields.push('cost_price = ?');
+      values.push(cost_price);
+    }
+
+    if (stock !== undefined) {
+      fields.push('stock = ?');
+      values.push(stock);
+    }
+
+    if (fields.length === 0) {
+      return 0;
+    }
+
+    values.push(id);
+
+    const query = `
+    UPDATE inventory_product
+    SET ${fields.join(', ')}
+    WHERE id = ?
+  `;
+
+    const result = await db.runAsync(query, values);
+
+    if (result.changes === 0) {
+      throw new Error('UPDATE_INVENTORY_PRODUCT_NO_CHANGES');
+    }
+
+    return result.changes;
+  }
+
+  async createSale(id: string, date: string, total: number): Promise<string> {
+    const db = (await DB.getInstance('')).connection;
+    await db.runAsync(
       `
       INSERT INTO sale (id, date, total)
       VALUES (?, ?, ?);
     `,
       [id, date, total]
     );
-    if (result.changes !== 1) {
-      throw new Error('Unexpected number of affected rows during insertion');
-    }
     return id;
   }
 
@@ -256,10 +444,10 @@ class ApiStokitoDatabase implements StokitoDatabase {
     `,
       []
     );
-    return results;
+    return results ?? [];
   }
 
-  async addSaleDetail(
+  async createSaleDetail(
     id: string,
     saleId: string,
     productName: string,
@@ -269,20 +457,17 @@ class ApiStokitoDatabase implements StokitoDatabase {
     isVoided: boolean
   ): Promise<string> {
     const db = (await DB.getInstance('')).connection;
-    const result = await db.runAsync(
+    await db.runAsync(
       `
       INSERT INTO sale_detail (id, sale_id, product_name, sale_price, quantity, subtotal)
       VALUES (?, ?, ?, ?, ?, ?);
     `,
       [id, saleId, productName, price, quantity, subtotal, Number(isVoided)]
     );
-    if (result.changes !== 1) {
-      throw new Error('Unexpected number of affected rows during insertion');
-    }
     return id;
   }
 
-  async fetchAllSaleDetails(): Promise<any[]> {
+  async getAllSaleDetails(): Promise<any[]> {
     const db = (await DB.getInstance('')).connection;
     const results = await db.getAllAsync(
       `
@@ -309,20 +494,82 @@ class ApiStokitoDatabase implements StokitoDatabase {
     isPrimary: boolean
   ): Promise<any> {
     const db = (await DB.getInstance('')).connection;
-    const result = await db.runAsync(
+    await db.runAsync(
       `
       INSERT INTO product_code (id, product_id, code, code_type, is_primary)
       VALUES (?, ?, ?, ?, ?);
     `,
       [id, productId, code, codeType, Number(isPrimary)]
     );
-    if (result.changes !== 1) {
-      throw new Error('Unexpected number of affected rows during insertion');
-    }
     return id;
   }
 
-  async fetchProductByCode(code: string): Promise<any> {
+  async updateProductCode(
+    id: string,
+    code: string,
+    codeType: string,
+    isPrimary?: boolean
+  ): Promise<number> {
+    const db = (await DB.getInstance('')).connection;
+
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    if (code !== undefined) {
+      fields.push('code = ?');
+      values.push(code);
+    }
+
+    if (codeType !== undefined) {
+      fields.push('code_type = ?');
+      values.push(codeType);
+    }
+
+    if (isPrimary !== undefined) {
+      fields.push('is_primary = ?');
+      values.push(isPrimary);
+    }
+
+    if (fields.length === 0) {
+      return 0;
+    }
+
+    values.push(id);
+
+    const query = `
+    UPDATE product_code
+    SET ${fields.join(', ')}
+    WHERE id = ?
+  `;
+
+    const result = await db.runAsync(query, values);
+
+    if (result.changes === 0) {
+      throw new Error('UPDATE_PRODUCT_CODE_NO_CHANGES');
+    }
+
+    return result.changes;
+  }
+
+  async deleteProductCode(id: string): Promise<number> {
+    const db = (await DB.getInstance('')).connection;
+
+    const result = await db.runAsync(`DELETE FROM product_code WHERE id = ?`, [
+      id,
+    ]);
+
+    if (result.changes === 0) {
+      throw new Error('DELETE_PRODUCT_CODE_NOT_FOUND');
+    }
+
+    if (result.changes > 1) {
+      throw new Error('DELETE_PRODUCT_CODE_UNEXPECTED_MULTIPLE_CHANGES');
+    }
+
+    return result.changes;
+  }
+
+  async getProductByCode(code: string): Promise<any> {
     const db = (await DB.getInstance('')).connection;
     const result = await db.getFirstAsync(
       `
@@ -334,11 +581,11 @@ class ApiStokitoDatabase implements StokitoDatabase {
     `,
       [code]
     );
-    if (result == null) throw new Error('Code not found');
+    if (result == null) throw new Error('GET_PRODUCT_BY_CODE_NOT_FOUND');
     return result;
   }
 
-  async fetchProductCodes(productId: string): Promise<any[]> {
+  async getProductCodes(productId: string): Promise<any[]> {
     const db = (await DB.getInstance('')).connection;
     const rows = await db.getAllAsync(
       `
@@ -349,7 +596,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     `,
       [productId]
     );
-    return rows;
+    return rows ?? [];
   }
 }
 
