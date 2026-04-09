@@ -15,7 +15,7 @@ export function InventoryFormFields({ editable }: FormFieldsProps) {
   } = useFormContext<InventoryFormFIeldsType>();
 
   return (
-    <>
+    <View style={styles.container}>
       <View style={styles.field}>
         <Controller
           control={control}
@@ -65,11 +65,14 @@ export function InventoryFormFields({ editable }: FormFieldsProps) {
           </Text>
         )}
       </View>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 16,
+  },
   field: {
     marginBottom: 16,
   },

@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   GestureResponderEvent,
-} from "react-native";
+} from 'react-native';
 
 type CardButtonProps = {
   title?: string;
@@ -27,26 +27,22 @@ export function CardButton({ title, imageSource, onPress }: CardButtonProps) {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    margin: 8,
     borderRadius: 12,
-    backgroundColor: "grey",
-    overflow: "hidden",
-    elevation: 3, // Android
-    shadowColor: "#000", // iOS
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+    backgroundColor: 'grey',
+    overflow: 'hidden',
   },
   pressed: {
     opacity: 0.8,
   },
   image: {
-    width: "100%",
-    height: 120,
+    width: '100%',
+    height: 90,
+    backgroundColor: '#5e5e5e',
+    borderRadius: 12,
   },
   title: {
-    padding: 12,
+    padding: 6,
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: '600',
   },
 });

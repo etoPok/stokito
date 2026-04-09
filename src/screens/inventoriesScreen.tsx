@@ -9,6 +9,7 @@ import { Inventory } from '../domain/inventory';
 import { InventoryProduct } from '../domain/inventoryProduct';
 import { useInventories } from '../hooks/inventoryContext';
 import repository from '../services/repositories';
+import { Grid } from '../components/grid';
 
 export function InventoriesScreen() {
   const insets = useSafeAreaInsets();
@@ -170,24 +171,20 @@ export function InventoriesScreen() {
         </AppAccordion>
       )}
 
-      <FlatList
-        contentContainerStyle={styles.listContent}
+      <Grid
         data={inventoryProducts}
         keyExtractor={(item) => item.id!}
-        numColumns={2}
-        columnWrapperStyle={{ justifyContent: 'space-between' }}
-        renderItem={({ item }) => (
-          <View style={styles.cardWrapper}>
-            <CardButton
-              title={item.name}
-              imageSource={require('../assets/favicon.png')}
-              onPress={() => {
-                navigation.navigate('InventoryProductScreen', {
-                  inventoryProduct: item,
-                });
-              }}
-            />
-          </View>
+        breakpoints={{ xs: 3, sm: 4, md: 4, lg: 5 }}
+        renderItem={(item, _) => (
+          <CardButton
+            title={item.name}
+            imageSource={require('../assets/favicon.png')}
+            onPress={() => {
+              navigation.navigate('InventoryProductScreen', {
+                inventoryProduct: item,
+              });
+            }}
+          />
         )}
       />
     </View>

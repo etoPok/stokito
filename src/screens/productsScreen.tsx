@@ -1,13 +1,18 @@
-import { View, FlatList, StyleSheet, Pressable, Text } from 'react-native';
+import { View, StyleSheet, Pressable, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CardButton } from './../components/cardButton';
 import { useProducts } from '../hooks/productContext';
 import { useTypedNavigation } from '../types';
+import { IconButton, Menu } from 'react-native-paper';
+import { useState } from 'react';
+import { Grid } from '../components/grid';
 
 export function ProductsScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useTypedNavigation<'ProductsScreen'>();
   const { products } = useProducts();
+
+  const [visible, setVisible] = useState<boolean>(false);
 
   return (
     <View
@@ -30,36 +35,41 @@ export function ProductsScreen() {
 
         <Text style={styles.headerTitle}>Productos</Text>
 
-        <View style={{ width: 60 }} />
-      </View>
-
-      <View style={styles.actionsContainer}>
-        <Pressable
-          style={styles.secondaryAction}
-          onPress={() =>
-            navigation.navigate('ProductScreen', { product: undefined })
+        <Menu
+          visible={visible}
+          onDismiss={() => setVisible(false)}
+          anchor={
+            <IconButton
+              icon="dots-horizontal"
+              size={24}
+              onPress={() => setVisible(true)}
+            />
           }
+          contentStyle={{ backgroundColor: 'black' }}
         >
-          <Text style={styles.secondaryActionText}>Agregar producto</Text>
-        </Pressable>
+          <Menu.Item
+            onPress={() => {
+              setVisible(false);
+              navigation.navigate('ProductScreen', { product: undefined });
+            }}
+            title="Agregar Producto"
+            titleStyle={{ color: 'white' }}
+          />
+        </Menu>
       </View>
 
-      <FlatList
-        contentContainerStyle={styles.listContent}
+      <Grid
         data={products}
         keyExtractor={(item) => item.id!}
-        numColumns={2}
-        columnWrapperStyle={{ justifyContent: 'space-between' }}
-        renderItem={({ item }) => (
-          <View style={styles.cardWrapper}>
-            <CardButton
-              title={item.name}
-              imageSource={require('../assets/favicon.png')}
-              onPress={() => {
-                navigation.navigate('ProductScreen', { product: item });
-              }}
-            />
-          </View>
+        breakpoints={{ xs: 3, sm: 4, md: 4, lg: 5 }}
+        renderItem={(item, _) => (
+          <CardButton
+            title={item.name}
+            imageSource={require('../assets/favicon.png')}
+            onPress={() =>
+              navigation.navigate('ProductScreen', { product: item })
+            }
+          />
         )}
       />
     </View>
@@ -67,9 +77,6 @@ export function ProductsScreen() {
 }
 
 const styles = StyleSheet.create({
-  flatlistOptions: {
-    paddingHorizontal: 12,
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -87,52 +94,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: '600',
-  },
-  actionsContainer: {
-    paddingHorizontal: 16,
-    marginTop: 10,
-    marginBottom: 14,
-  },
-  secondaryAction: {
-    backgroundColor: '#1A1D24',
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#2A2F3A',
-    marginBottom: 10,
-  },
-  secondaryActionText: {
-    color: '#D1D5DB',
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 40,
-  },
-  cardWrapper: {
-    width: '48%',
-    marginBottom: 16,
-  },
-  container: {
-    width: '100%',
-  },
-  actionsRow: {
-    marginTop: 6,
-    gap: 6,
-  },
-  deleteProduct: {
-    backgroundColor: '#7F1D1D',
-    paddingVertical: 6,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  actionText: {
-    color: 'white',
-    fontSize: 12,
     fontWeight: '600',
   },
 });
