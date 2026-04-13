@@ -9,6 +9,8 @@ import DB from './src/services/dataBase';
 import { ProductProvider } from './src/hooks/productContext';
 import { InventoryProvider } from './src/hooks/inventoryContext';
 
+import { AppThemeProvider } from './src/hooks/useAppTheme';
+
 export default function App() {
   const [dbReady, setDbReady] = useState(false);
 
@@ -30,15 +32,17 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <ProductProvider>
-        <InventoryProvider>
-          <PaperProvider>
-            <StatusBar style="light" />
-            <Navigation />
-          </PaperProvider>
-        </InventoryProvider>
-      </ProductProvider>
-    </SafeAreaProvider>
+    <AppThemeProvider>
+      <SafeAreaProvider>
+        <ProductProvider>
+          <InventoryProvider>
+            <PaperProvider>
+              <StatusBar style="light" />
+              <Navigation />
+            </PaperProvider>
+          </InventoryProvider>
+        </ProductProvider>
+      </SafeAreaProvider>
+    </AppThemeProvider>
   );
 }

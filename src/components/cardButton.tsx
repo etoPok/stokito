@@ -2,9 +2,12 @@ import {
   Pressable,
   Image,
   Text,
-  StyleSheet,
   GestureResponderEvent,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
+import { useStyles } from '../hooks/useStyles';
+import { AppTheme } from '../theme/themes';
 
 type CardButtonProps = {
   title?: string;
@@ -13,6 +16,8 @@ type CardButtonProps = {
 };
 
 export function CardButton({ title, imageSource, onPress }: CardButtonProps) {
+  const styles = useStyles(createStyles);
+
   return (
     <Pressable
       onPress={onPress}
@@ -24,25 +29,26 @@ export function CardButton({ title, imageSource, onPress }: CardButtonProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: AppTheme) => ({
   card: {
     flex: 1,
     borderRadius: 12,
-    backgroundColor: 'grey',
+    backgroundColor: theme.card,
     overflow: 'hidden',
-  },
+  } satisfies ViewStyle,
   pressed: {
     opacity: 0.8,
   },
   image: {
     width: '100%',
     height: 90,
-    backgroundColor: '#5e5e5e',
+    backgroundColor: theme.border,
     borderRadius: 12,
-  },
+  } satisfies ViewStyle,
   title: {
+    color: theme.textPrimary,
     padding: 6,
     fontSize: 18,
     fontWeight: '600',
-  },
+  } satisfies TextStyle,
 });

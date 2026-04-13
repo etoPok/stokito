@@ -1,4 +1,12 @@
-import { View, FlatList, StyleSheet, Pressable, Text } from 'react-native';
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  Pressable,
+  Text,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CardButton } from './../components/cardButton';
 import { useState } from 'react';
@@ -10,11 +18,17 @@ import { InventoryProduct } from '../domain/inventoryProduct';
 import { useInventories } from '../hooks/inventoryContext';
 import repository from '../services/repositories';
 import { Grid } from '../components/grid';
+import { useStyles } from '../hooks/useStyles';
+import { AppTheme } from '../theme/themes';
+import { Header } from '../components/header';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 export function InventoriesScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useTypedNavigation<'InventoryScreen'>();
   const { inventories, removeInventory } = useInventories();
+  const styles = useStyles(createStyles);
+  const { theme } = useAppTheme();
 
   const [inventoryProducts, setInventoryProducts] = useState<
     InventoryProduct[]
@@ -31,61 +45,62 @@ export function InventoriesScreen() {
 
   return (
     <View
-      style={{
-        flex: 1,
-        backgroundColor: 'black',
-        paddingBottom: insets.bottom,
-        paddingTop: insets.top,
-      }}
+      style={[
+        styles.container,
+        {
+          paddingBottom: insets.bottom,
+          paddingTop: insets.top,
+        },
+      ]}
     >
-      <View style={styles.header}>
-        <Pressable
-          style={styles.backButton}
-          onPress={() => {
-            navigation.goBack();
-          }}
-        >
-          <Text style={styles.backText}>Volver</Text>
-        </Pressable>
-
-        <Text style={styles.headerTitle}>Inventario</Text>
-
-        <Menu
-          visible={visible}
-          onDismiss={closeMenu}
-          anchor={
-            <IconButton icon="dots-horizontal" size={24} onPress={openMenu} />
-          }
-          contentStyle={{ backgroundColor: 'black' }}
-        >
-          <Menu.Item
-            onPress={() => {
-              setVisible(false);
-              navigation.navigate('InventoryProductScreen', {
-                inventoryProduct: undefined,
-              });
-            }}
-            title="Agregar producto"
-            titleStyle={{ color: 'white' }}
-          />
-          <Menu.Item
-            onPress={() => {
-              setVisible(false);
-              navigation.navigate('InventoryScreen', { inventory: undefined });
-            }}
-            title="Agregar inventario"
-            titleStyle={{ color: 'white' }}
-          />
-          <Menu.Item
-            onPress={() => {
-              setDeleteInventory(true);
-              setVisible(false);
-            }}
-            title="Eliminar inventario"
-            titleStyle={{ color: 'white' }}
-          />
-        </Menu>
-      </View>
+      <Header
+        title="Inventarios"
+        goBack={navigation.goBack}
+        rightSide={
+          <Menu
+            visible={visible}
+            onDismiss={closeMenu}
+            anchor={
+              <IconButton
+                icon="dots-horizontal"
+                size={24}
+                onPress={openMenu}
+                iconColor={theme.textPrimary}
+              />
+            }
+            contentStyle={styles.popupMenuButton}
+          >
+            <Menu.Item
+              onPress={() => {
+                setVisible(false);
+                navigation.navigate('InventoryProductScreen', {
+                  inventoryProduct: undefined,
+                });
+              }}
+              title="Agregar producto"
+              titleStyle={styles.popupOptionText}
+            />
+            <Menu.Item
+              onPress={() => {
+                setVisible(false);
+                navigation.navigate('InventoryScreen', {
+                  inventory: undefined,
+                });
+              }}
+              title="Agregar inventario"
+              titleStyle={styles.popupOptionText}
+            />
+            <Menu.Item
+              onPress={() => {
+                setDeleteInventory(true);
+                setVisible(false);
+              }}
+              title="Eliminar inventario"
+              titleStyle={styles.popupOptionText}
+            />
+          </Menu>
+        }
+      ></Header>
 
       {!deleteInventory ? (
         <AppAccordion
@@ -191,46 +206,29 @@ export function InventoriesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: AppTheme) => ({
+  container: {
+    flex: 1,
+    backgroundColor: theme.background,
+  },
+
   flatlistOptions: {
     paddingHorizontal: 12,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  backButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  backText: {
-    color: '#4da6ff',
-    fontSize: 16,
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
   },
   actionsContainer: {
     paddingHorizontal: 16,
     marginTop: 10,
     marginBottom: 14,
-  },
+  } satisfies ViewStyle,
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 40,
-  },
+  } satisfies ViewStyle,
   cardWrapper: {
     width: '48%',
     marginBottom: 16,
-  },
-  container: {
-    width: '100%',
-  },
+  } satisfies ViewStyle,
   actionsRow: {
     marginTop: 6,
     gap: 6,
@@ -240,16 +238,23 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
     alignItems: 'center',
-  },
+  } satisfies ViewStyle,
   deleteInventory: {
     backgroundColor: '#991B1B',
     paddingVertical: 6,
     borderRadius: 8,
     alignItems: 'center',
-  },
+  } satisfies ViewStyle,
   actionText: {
     color: 'white',
     fontSize: 12,
     fontWeight: '600',
+  } satisfies TextStyle,
+
+  popupMenuButton: {
+    backgroundColor: theme.background,
+  },
+  popupOptionText: {
+    color: theme.textPrimary,
   },
 });

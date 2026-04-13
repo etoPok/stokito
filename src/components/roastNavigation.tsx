@@ -12,6 +12,7 @@ import { ProductScreen } from '../screens/productScreen';
 import { InventoryProductScreen } from '../screens/inventoryProductScreen';
 import { InventoryScreen } from '../screens/inventoryScreen';
 import { CcodeScannerScreen } from '../screens/codeScannerScreen';
+import { PreferencesScreen } from '../screens/preferencesScreen';
 
 const RootStack = createNativeStackNavigator({
   screens: {
@@ -77,6 +78,12 @@ const RootStack = createNativeStackNavigator({
     },
     CodeScannerScreen: {
       screen: CcodeScannerScreen,
+      options: {
+        headerShown: false,
+      },
+    },
+    PreferencesScreen: {
+      screen: PreferencesScreen,
       options: {
         headerShown: false,
       },

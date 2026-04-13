@@ -1,10 +1,20 @@
-import { View, StyleSheet, Text, Pressable, FlatList } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  FlatList,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Sale } from '../domain/sale';
 import { useEffect, useState } from 'react';
 import repository from '../services/repositories';
 import { useTypedNavigation } from '../types';
 import { ensureCurrencyFormat } from '../utils/price';
+import { useStyles } from '../hooks/useStyles';
+import { AppTheme } from '../theme/themes';
+import { Header } from '../components/header';
 
 const dateFormater = Intl.DateTimeFormat('es-Es', {
   dateStyle: 'short',
@@ -15,6 +25,7 @@ export function SalesScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useTypedNavigation<'SalesScreen'>();
   const [sales, setSales] = useState<Sale[]>([]);
+  const styles = useStyles(createStyles);
 
   useEffect(() => {
     const getSales = async () => {
@@ -37,7 +48,7 @@ export function SalesScreen() {
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <Text style={styles.cardHeaderText}> Venta </Text>
-        <Text style={[styles.value, { fontSize: 14 }]}> {item.id} </Text>
+        <Text style={styles.cardTextId}> {item.id} </Text>
       </View>
       <View style={styles.cardBody}>
         <View style={styles.row}>
@@ -55,25 +66,15 @@ export function SalesScreen() {
 
   return (
     <View
-      style={{
-        flex: 1,
-        marginBottom: insets.bottom,
-        marginTop: insets.top,
-        backgroundColor: 'black',
-      }}
+      style={[
+        styles.container,
+        {
+          paddingBottom: insets.bottom,
+          paddingTop: insets.top,
+        },
+      ]}
     >
-      <View style={styles.header}>
-        <Pressable
-          style={styles.backButton}
-          onPress={() => {
-            navigation.goBack();
-          }}
-        >
-          <Text style={styles.backText}>Volver</Text>
-        </Pressable>
-        <Text style={styles.headerTitle}>Ventas</Text>
-        <View style={{ width: 60 }} />
-      </View>
+      <Header title="Ventas" goBack={navigation.goBack}></Header>
       <FlatList
         data={sales}
         keyExtractor={(_, index) => index.toString()}
@@ -85,41 +86,27 @@ export function SalesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 24,
+const createStyles = (theme: AppTheme) => ({
+  container: {
+    flex: 1,
+    backgroundColor: theme.background,
   },
-  backButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  backText: {
-    color: '#4da6ff',
-    fontSize: 16,
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
+
   card: {
     backgroundColor: '#1A1A1A',
     borderRadius: 16,
     marginBottom: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#333',
-  },
+    borderColor: theme.card,
+  } satisfies ViewStyle,
   cardHeader: {
-    backgroundColor: '#262626',
+    backgroundColor: theme.border,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
+    borderBottomColor: theme.border,
+  } satisfies ViewStyle,
   cardBody: {
     padding: 16,
   },
@@ -128,25 +115,31 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
-  },
+  } satisfies ViewStyle,
   label: {
-    color: '#AAAAAA',
+    color: theme.textSecondary,
     fontSize: 14,
     fontWeight: '400',
-  },
+  } satisfies TextStyle,
   value: {
-    color: 'white',
+    color: theme.textPrimary,
     fontSize: 16,
     fontWeight: '500',
-  },
+  } satisfies TextStyle,
   listContent: {
     paddingHorizontal: 16,
     paddingBottom: 20,
-  },
+  } satisfies ViewStyle,
+
   cardHeaderText: {
-    color: 'white',
+    color: theme.textPrimary,
     fontSize: 18,
     fontWeight: 'bold',
     textTransform: 'capitalize',
-  },
+  } satisfies TextStyle,
+  cardTextId: {
+    color: theme.textSecondary,
+    fontSize: 14,
+    fontWeight: '500',
+  } satisfies TextStyle,
 });

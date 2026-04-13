@@ -1,8 +1,11 @@
-import { StyleSheet, View, Pressable, Text, Alert } from 'react-native';
+import { Alert } from 'react-native';
 import { RootStackParamList, ScreenNavigation } from '../types';
 import { Menu, IconButton } from 'react-native-paper';
 import { useState } from 'react';
 import { useEntityForm } from '../hooks/entityFormContext';
+import { Header } from './header';
+import { AppTheme } from '../theme/themes';
+import { useStyles } from '../hooks/useStyles';
 
 type FormHeaderProps<S extends keyof RootStackParamList> = {
   title: string;
@@ -23,58 +26,52 @@ export function FormHeader<S extends keyof RootStackParamList>({
   const [visible, setVisible] = useState<boolean>(false);
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
+  const styles = useStyles(createStyles);
 
   return (
-    <>
-      <View style={styles.header}>
-        <Pressable
-          style={styles.backButton}
-          onPress={async () => {
-            if (!editableEntity || (editableEntity && !isEdited())) {
-              navigation.goBack();
-              return;
-            }
-            if (isEdited()) {
-              Alert.alert(
-                '¿Guardar cambios?',
-                'Si no guarda los cambios no podrá recuperarlos',
-                [
-                  {
-                    text: 'Guardar',
-                    onPress: async () => {
-                      await submit();
-                    },
-                  },
-                  {
-                    text: 'Descartar',
-                    style: 'cancel',
-                    onPress: () => navigation.goBack(),
-                  },
-                  {
-                    text: 'Continuar',
-                  },
-                ]
-              );
-            }
-          }}
-        >
-          <Text style={styles.backText}>Volver</Text>
-        </Pressable>
-
-        <Text style={styles.headerTitle}>{title}</Text>
-
+    <Header
+      title={title}
+      goBack={() => {
+        if (!editableEntity || (editableEntity && !isEdited())) {
+          navigation.goBack();
+          return;
+        }
+        if (isEdited()) {
+          Alert.alert(
+            '¿Guardar cambios?',
+            'Si no guarda los cambios no podrá recuperarlos',
+            [
+              {
+                text: 'Guardar',
+                onPress: async () => {
+                  await submit();
+                },
+              },
+              {
+                text: 'Descartar',
+                style: 'cancel',
+                onPress: () => navigation.goBack(),
+              },
+              {
+                text: 'Continuar',
+              },
+            ]
+          );
+        }
+      }}
+      rightSide={
         <Menu
           visible={visible}
           onDismiss={closeMenu}
           anchor={
             <IconButton icon="dots-horizontal" size={24} onPress={openMenu} />
           }
-          contentStyle={{ backgroundColor: 'black' }}
+          contentStyle={styles.popupMenuButton}
         >
           {editableEntity ? (
             <Menu.Item
               title={'Descartar cambios'}
-              titleStyle={{ color: 'white' }}
+              titleStyle={styles.popupOptionText}
               onPress={() => {
                 setDiscardChanges((prev) => prev + 1);
                 setEditableEntity(false);
@@ -84,7 +81,7 @@ export function FormHeader<S extends keyof RootStackParamList>({
           ) : (
             <Menu.Item
               title="Editar"
-              titleStyle={{ color: 'white' }}
+              titleStyle={styles.popupOptionText}
               onPress={() => {
                 closeMenu();
                 setEditableEntity(true);
@@ -92,29 +89,16 @@ export function FormHeader<S extends keyof RootStackParamList>({
             />
           )}
         </Menu>
-      </View>
-    </>
+      }
+    ></Header>
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 24,
+const createStyles = (theme: AppTheme) => ({
+  popupMenuButton: {
+    backgroundColor: theme.background,
   },
-  backButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  backText: {
-    color: '#4da6ff',
-    fontSize: 16,
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+  popupOptionText: {
+    color: theme.textPrimary,
   },
 });
