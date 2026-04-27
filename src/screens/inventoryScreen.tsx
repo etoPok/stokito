@@ -31,18 +31,15 @@ export function InventoryScreen() {
           };
         }
       }}
-      save={async (values, route) => {
-        if (route.params.inventory === undefined) {
-          await addInventory({
-            id: values.inventory.id,
-            name: values.inventory.name,
-            location: values.inventory.location,
-            createdAt: '',
-          });
-        } else {
-          console.log('UPDATE');
-        }
+      handleNewEntity={async (values, route) => {
+        await addInventory({
+          id: values.inventory.id,
+          name: values.inventory.name,
+          location: values.inventory.location,
+          createdAt: '',
+        });
       }}
+      handleEntityUpdate={async (values, route) => {}}
       Fields={InventoryFormFields}
     />
   );

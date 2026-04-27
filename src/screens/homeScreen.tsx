@@ -14,9 +14,8 @@ import { RootStackParamList, useTypedNavigation } from '../types';
 import { useEffect } from 'react';
 import { useInventories } from '../hooks/inventoryContext';
 import { useProducts } from '../hooks/productContext';
-import { Theme } from '../theme/themes';
+import { AppTheme } from '../theme/themes';
 import { useStyles } from '../hooks/useStyles';
-import { IconButton } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../hooks/useAppTheme';
 
@@ -44,7 +43,7 @@ const options: OptionItem[] = [
     title: 'Productos',
     image: require('../assets/favicon.png'),
     route: 'ProductsScreen',
-    params: undefined,
+    params: { type: 'view' },
   },
   {
     id: '3',
@@ -138,7 +137,7 @@ export function HomeScreen() {
   );
 }
 
-const createStyles = (theme: Theme) => ({
+const createStyles = (theme: AppTheme) => ({
   container: {
     flex: 1,
     backgroundColor: theme.background,

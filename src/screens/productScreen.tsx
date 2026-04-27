@@ -44,23 +44,29 @@ export function ProductScreen() {
           productCode: [],
         } satisfies DefaultValues<ProductFormFieldsType>;
       }}
-      save={async (values, route) => {
-        if (route.params.product === undefined) {
-          addProduct(
-            {
-              id: values.product.id!,
-              name: values.product.name!,
-              salePrice: values.product.salePrice!,
-              costPrice: values.product.costPrice!,
-              description: values.product.description,
-              isDiscontinued: values.product.isDiscontinued!,
-              createdAt: values.product.createdAt,
-            },
-            values.productCode
-          );
-        } else {
-          console.log('UPDATE');
-        }
+      handleNewEntity={async (values, route) => {
+        addProduct(
+          {
+            id: values.product.id!,
+            name: values.product.name!,
+            salePrice: values.product.salePrice!,
+            costPrice: values.product.costPrice!,
+            description: values.product.description,
+            isDiscontinued: values.product.isDiscontinued!,
+            createdAt: values.product.createdAt,
+          },
+          values.productCode
+        );
+      }}
+      handleEntityUpdate={async (values, route) => {
+        await repository.updateProduct(
+          values.product.id!,
+          values.product.name!,
+          values.product.description!,
+          values.product.salePrice!,
+          values.product.costPrice!,
+          values.product.isDiscontinued
+        );
       }}
       Fields={ProductFormFields}
     />

@@ -3,13 +3,14 @@ import { EntityResolver } from './resolver';
 
 export type InventoryProduct = {
   id: string | undefined;
+  productId: string | undefined;
   name: string | undefined;
   salePrice: number | undefined;
   costPrice: number | undefined;
   description: string | undefined;
   isDiscontinued: boolean | undefined;
   createdAt: string | undefined;
-  stok: number | undefined;
+  stock: number | undefined;
   inventory: Inventory | undefined;
 };
 
@@ -20,7 +21,7 @@ type InventoryProductRequired = Pick<
   | 'salePrice'
   | 'costPrice'
   | 'isDiscontinued'
-  | 'stok'
+  | 'stock'
   | 'inventory'
 >;
 
@@ -33,7 +34,7 @@ const inventoryProductRequiredFieldsMessages: Record<
   salePrice: 'El precio de venta del producto es requerido',
   costPrice: 'El precio de costo del producto es requerido',
   isDiscontinued: 'Debe especificar si el producto esta descontinuado',
-  stok: 'El stok del producto es requerido',
+  stock: 'El stok del producto es requerido',
   inventory: 'El inventario del producto es un campo requerido',
 };
 

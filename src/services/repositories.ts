@@ -90,6 +90,28 @@ class Repository {
     return changes === 1;
   }
 
+  async updateProduct(
+    id: string,
+    name?: string,
+    description?: string,
+    salePrice?: number,
+    costPrice?: number,
+    isDiscontinued?: boolean
+  ): Promise<void> {
+    try {
+      await stokitoDB.updateProduct(
+        id,
+        name,
+        description,
+        isDiscontinued,
+        salePrice,
+        costPrice
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   // INVENTORY
   async setInventory(
     id: string,
@@ -101,6 +123,7 @@ class Repository {
     const inventory: Inventory = { id, name, location, createdAt: date };
     return inventory;
   }
+
   async getAllInventories(): Promise<Inventory[]> {
     // type-unsafe
     const rows = await stokitoDB.getAllInventories();
@@ -127,6 +150,7 @@ class Repository {
     };
     return inventory;
   }
+
   async removeInventory(id: string): Promise<boolean> {
     const changes = await stokitoDB.deleteInventory(id);
     return changes === 1;
@@ -134,23 +158,9 @@ class Repository {
 
   // INVENTORY ITEM
 
-  private async setInventoryItem(
-    inventoryId: string,
-    productId: string,
-    stock: number
-  ): Promise<number | null> {
-    const created_at = new Date().toISOString();
-    const result = await stokitoDB.createInventoryProduct(
-      productId,
-      inventoryId,
-      stock,
-      created_at
-    );
-    return result;
-  }
-
-  async addProductToInventory(
+  async createInventoryProduct(
     id: string,
+    productId: string,
     name: string,
     salePrice: number,
     costPrice: number,
@@ -159,18 +169,104 @@ class Repository {
     stock: number,
     inventoryId: string,
     productCodes: ProductCode[]
-  ): Promise<Product> {
-    const product = await this.setProduct(
-      id,
+  ): Promise<string> {
+    const date = new Date().toISOString();
+    await stokitoDB.createProduct(
+      productId,
       name,
       salePrice,
       costPrice,
       description,
       isDiscontinued,
-      productCodes
+      date
     );
-    await this.setInventoryItem(inventoryId, id, stock);
-    return product;
+    try {
+      for (const pc of productCodes) {
+        await this.createProductCode(
+          pc.id,
+          id,
+          pc.code,
+          pc.codeType,
+          pc.isPrimary
+        );
+      }
+    } catch (error) {
+      await stokitoDB.deleteProduct(id);
+      console.log(error);
+    }
+    await stokitoDB.createInventoryProduct(
+      id,
+      productId,
+      inventoryId,
+      stock,
+      date
+    );
+    return id;
+  }
+
+  async addProductToInventory(
+    id: string,
+    productId: string,
+    inventoryId: string,
+    stock: number
+  ): Promise<string> {
+    await stokitoDB.createInventoryProduct(
+      id,
+      productId,
+      inventoryId,
+      stock,
+      new Date().toISOString()
+    );
+    return id;
+  }
+
+  async updateInventoryProduct(
+    id: string,
+    productId: string,
+    name?: string,
+    description?: string,
+    salePrice?: number,
+    costPrice?: number,
+    inventoryId?: string,
+    stock?: number,
+    productCodes?: ProductCode[],
+    isDiscontinued?: boolean
+  ): Promise<void> {
+    try {
+      if (productCodes) {
+        const pcs = await stokitoDB.getProductCodes(productId);
+        for (const pc of productCodes) {
+          const existingProductCode = pcs.find((value) => value.id === pc.id);
+          if (existingProductCode) {
+            await stokitoDB.updateProductCode(
+              pc.id,
+              pc.code,
+              pc.codeType,
+              pc.isPrimary
+            );
+          } else {
+            await stokitoDB.createProductCode(
+              pc.id,
+              productId,
+              pc.code,
+              pc.codeType,
+              pc.isPrimary
+            );
+          }
+        }
+      }
+      await stokitoDB.updateProduct(
+        productId,
+        name,
+        description,
+        isDiscontinued,
+        salePrice,
+        costPrice
+      );
+      await stokitoDB.updateInventoryProduct(id, inventoryId, stock);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async getInventoryProducts(inventoryId: string): Promise<InventoryProduct[]> {
@@ -187,13 +283,14 @@ class Repository {
     rows.forEach((r) => {
       inventoryProducts.push({
         id: r.id,
+        productId: r.product_id,
         name: r.name,
         salePrice: r.sale_price,
         costPrice: r.cost_price,
         description: r.description,
         isDiscontinued: r.is_discontinued,
         createdAt: r.created_at,
-        stok: r.stock,
+        stock: r.stock,
         inventory: inventory,
       });
     });
@@ -322,7 +419,7 @@ class Repository {
         id: r.id,
         code: r.code,
         codeType: r.code_type,
-        isPrimary: r.is_prumary,
+        isPrimary: r.is_primary,
       } satisfies ProductCode;
     });
   }

@@ -1,12 +1,4 @@
-import {
-  View,
-  FlatList,
-  StyleSheet,
-  Pressable,
-  Text,
-  ViewStyle,
-  TextStyle,
-} from 'react-native';
+import { View, Pressable, Text, ViewStyle, TextStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CardButton } from './../components/cardButton';
 import { useState } from 'react';
@@ -22,6 +14,9 @@ import { useStyles } from '../hooks/useStyles';
 import { AppTheme } from '../theme/themes';
 import { Header } from '../components/header';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { createPickerRequest } from '../services/pickerService';
+import { Product } from '../domain/product';
+import { v4 as uuid } from 'uuid';
 
 export function InventoriesScreen() {
   const insets = useSafeAreaInsets();
@@ -77,7 +72,32 @@ export function InventoriesScreen() {
                   inventoryProduct: undefined,
                 });
               }}
-              title="Agregar producto"
+              title="Crear producto de inventario"
+              titleStyle={styles.popupOptionText}
+            />
+            <Menu.Item
+              onPress={async () => {
+                setVisible(false);
+                navigation.navigate('ProductsScreen', {
+                  type: 'single-pick',
+                  pickerKey: 'order:product',
+                });
+                const p = await createPickerRequest<Product>('order:product');
+                if (p) {
+                  navigation.navigate('InventoryProductScreen', {
+                    inventoryProduct: {
+                      ...p,
+                      ...{
+                        id: uuid(),
+                        productId: p.id,
+                        stock: undefined,
+                        inventory: undefined,
+                      },
+                    },
+                  });
+                }
+              }}
+              title="Agregar producto a inventario"
               titleStyle={styles.popupOptionText}
             />
             <Menu.Item
@@ -87,7 +107,7 @@ export function InventoriesScreen() {
                   inventory: undefined,
                 });
               }}
-              title="Agregar inventario"
+              title="Crear inventario"
               titleStyle={styles.popupOptionText}
             />
             <Menu.Item

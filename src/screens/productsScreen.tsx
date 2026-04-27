@@ -1,8 +1,8 @@
-import { View, Pressable, Text, ViewStyle, TextStyle } from 'react-native';
+import { Button, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CardButton } from './../components/cardButton';
 import { useProducts } from '../hooks/productContext';
-import { useTypedNavigation } from '../types';
+import { useTypedNavigation, useTypedRoute } from '../types';
 import { IconButton, Menu } from 'react-native-paper';
 import { useState } from 'react';
 import { Grid } from '../components/grid';
@@ -10,6 +10,8 @@ import { useStyles } from '../hooks/useStyles';
 import { AppTheme } from '../theme/themes';
 import { Header } from '../components/header';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { useScreenMode } from '../hooks/usePickerHandler';
+import { Product } from '../domain/product';
 
 export function ProductsScreen() {
   const insets = useSafeAreaInsets();
@@ -19,56 +21,78 @@ export function ProductsScreen() {
   const { theme } = useAppTheme();
 
   const [visible, setVisible] = useState<boolean>(false);
+  const mode = useTypedRoute<'ProductsScreen'>().params ?? { type: 'view' };
+
+  const {
+    isViewMode,
+    isPickerMode,
+    isMultiPick,
+    handleItemPress,
+    confirmMultiPick,
+    cancel,
+    selectedItems,
+  } = useScreenMode<Product, 'ProductsScreen'>({
+    mode,
+    navigation,
+  });
 
   return (
     <View
       style={[
         styles.container,
-        {
-          paddingBottom: insets.bottom,
-          paddingTop: insets.top,
-        },
+        { paddingBottom: insets.bottom, paddingTop: insets.top },
       ]}
     >
       <Header
         title="Productos"
-        goBack={navigation.goBack}
+        goBack={isPickerMode ? cancel : navigation.goBack}
         rightSide={
-          <Menu
-            visible={visible}
-            onDismiss={() => setVisible(false)}
-            anchor={
-              <IconButton
-                icon="dots-horizontal"
-                size={24}
-                onPress={() => setVisible(true)}
-                iconColor={theme.textPrimary}
+          isViewMode ? (
+            <Menu
+              visible={visible}
+              onDismiss={() => setVisible(false)}
+              anchor={
+                <IconButton
+                  icon="dots-horizontal"
+                  size={24}
+                  onPress={() => setVisible(true)}
+                  iconColor={theme.textPrimary}
+                />
+              }
+              contentStyle={styles.popupMenuButton}
+            >
+              <Menu.Item
+                onPress={() => {
+                  setVisible(false);
+                  navigation.navigate('ProductScreen', { product: undefined });
+                }}
+                title="Agregar Producto"
+                titleStyle={styles.popupOptionText}
               />
-            }
-            contentStyle={styles.popupMenuButton}
-          >
-            <Menu.Item
-              onPress={() => {
-                setVisible(false);
-                navigation.navigate('ProductScreen', { product: undefined });
-              }}
-              title="Agregar Producto"
-              titleStyle={styles.popupOptionText}
+            </Menu>
+          ) : isMultiPick ? (
+            <Button
+              title={`Confirmar (${selectedItems.length})`}
+              onPress={confirmMultiPick}
+              disabled={selectedItems.length === 0}
             />
-          </Menu>
+          ) : undefined
         }
-      ></Header>
+      />
 
       <Grid
         data={products}
         keyExtractor={(item) => item.id!}
         breakpoints={{ xs: 3, sm: 4, md: 4, lg: 5 }}
-        renderItem={(item, _) => (
+        renderItem={(item) => (
           <CardButton
             title={item.name}
             imageSource={require('../assets/favicon.png')}
+            // selected={isItemSelected(item, (p) => p.id!)}
             onPress={() =>
-              navigation.navigate('ProductScreen', { product: item })
+              isViewMode
+                ? navigation.navigate('ProductScreen', { product: item })
+                : handleItemPress(item)
             }
           />
         )}

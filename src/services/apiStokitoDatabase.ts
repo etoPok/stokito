@@ -17,9 +17,9 @@ interface StokitoDatabase {
     id: string,
     name?: string,
     description?: string,
-    is_discontinued?: number,
-    sale_price?: number,
-    cost_price?: number
+    isDiscontinued?: boolean,
+    salePrice?: number,
+    costPrice?: number
   ): Promise<number>;
 
   createInventory(
@@ -38,19 +38,16 @@ interface StokitoDatabase {
   ): Promise<number>;
 
   createInventoryProduct(
+    id: string,
     productId: string,
     inventoryId: string,
     stock: number,
-    created_at: string
+    createdAt: string
   ): Promise<number>;
   getInventoryProducts(inventoryId: string): Promise<any[]>;
   updateInventoryProduct(
     id: string,
-    name?: string,
-    description?: string,
-    is_discontinued?: number,
-    sale_price?: number,
-    cost_price?: number,
+    inventoryId?: string,
     stock?: number
   ): Promise<number>;
 
@@ -164,9 +161,9 @@ class ApiStokitoDatabase implements StokitoDatabase {
     id: string,
     name?: string,
     description?: string,
-    is_discontinued?: number,
-    sale_price?: number,
-    cost_price?: number
+    isDiscontinued?: boolean,
+    salePrice?: number,
+    costPrice?: number
   ): Promise<number> {
     const db = (await DB.getInstance('')).connection;
 
@@ -183,19 +180,19 @@ class ApiStokitoDatabase implements StokitoDatabase {
       values.push(description);
     }
 
-    if (is_discontinued !== undefined) {
+    if (isDiscontinued !== undefined) {
       fields.push('is_discontinued = ?');
-      values.push(is_discontinued);
+      values.push(Number(isDiscontinued));
     }
 
-    if (sale_price !== undefined) {
+    if (salePrice !== undefined) {
       fields.push('sale_price = ?');
-      values.push(sale_price);
+      values.push(salePrice);
     }
 
-    if (cost_price !== undefined) {
+    if (costPrice !== undefined) {
       fields.push('cost_price = ?');
-      values.push(cost_price);
+      values.push(costPrice);
     }
 
     if (fields.length === 0) {
@@ -321,18 +318,19 @@ class ApiStokitoDatabase implements StokitoDatabase {
   }
 
   async createInventoryProduct(
+    id: string,
     productId: string,
     inventoryId: string,
     stock: number,
-    created_at: string
+    createdAt: string
   ): Promise<number> {
     const db = (await DB.getInstance('')).connection;
     const result = await db.runAsync(
       `
-      INSERT INTO inventory_product (inventory_id, product_definition_id, stock, created_at)
-      VALUES (?, ?, ?, ?);
+      INSERT INTO inventory_product (id, product_id, inventory_id, stock, created_at)
+      VALUES (?, ?, ?, ?, ?);
     `,
-      [inventoryId, productId, stock, created_at]
+      [id, productId, inventoryId, stock, createdAt]
     );
     return result.lastInsertRowId;
   }
@@ -342,16 +340,17 @@ class ApiStokitoDatabase implements StokitoDatabase {
     const rows = await db.getAllAsync(
       `
       SELECT
-        pd.id,
+        pd.id AS product_id,
         pd.name,
         pd.sale_price,
         pd.cost_price,
         pd.is_discontinued,
         pd.description,
+        ii.id,
         ii.created_at,
         ii.stock
       FROM inventory_product ii
-      JOIN product_definition pd ON pd.id = ii.product_definition_id
+      JOIN product_definition pd ON pd.id = ii.product_id
       WHERE ii.inventory_id = ?;
     `,
       [inventoryId]
@@ -361,11 +360,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
 
   async updateInventoryProduct(
     id: string,
-    name?: string,
-    description?: string,
-    is_discontinued?: number,
-    sale_price?: number,
-    cost_price?: number,
+    inventoryId?: string,
     stock?: number
   ): Promise<number> {
     const db = (await DB.getInstance('')).connection;
@@ -373,34 +368,14 @@ class ApiStokitoDatabase implements StokitoDatabase {
     const fields: string[] = [];
     const values: any[] = [];
 
-    if (name !== undefined) {
-      fields.push('name = ?');
-      values.push(name);
-    }
-
-    if (description !== undefined) {
-      fields.push('description = ?');
-      values.push(description);
-    }
-
-    if (is_discontinued !== undefined) {
-      fields.push('is_discontinued = ?');
-      values.push(is_discontinued);
-    }
-
-    if (sale_price !== undefined) {
-      fields.push('sale_price = ?');
-      values.push(sale_price);
-    }
-
-    if (cost_price !== undefined) {
-      fields.push('cost_price = ?');
-      values.push(cost_price);
-    }
-
     if (stock !== undefined) {
       fields.push('stock = ?');
       values.push(stock);
+    }
+
+    if (inventoryId !== undefined) {
+      fields.push('inventory_id = ?');
+      values.push(inventoryId);
     }
 
     if (fields.length === 0) {

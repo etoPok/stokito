@@ -23,7 +23,8 @@ type CreateEntityScreenProps<
 
   isNew: (route: ScreenRoute<S>) => boolean;
 
-  save: (values: T, route: ScreenRoute<S>) => Promise<void>;
+  handleNewEntity: (values: T, route: ScreenRoute<S>) => Promise<void>;
+  handleEntityUpdate: (values: T, route: ScreenRoute<S>) => Promise<void>;
 
   Fields: React.ComponentType<{ editable: boolean; isNew: boolean }>;
 };
@@ -36,8 +37,9 @@ export function CreateEntityScreen<
   titleView,
   resolver,
   getDefaultValues,
+  handleNewEntity,
+  handleEntityUpdate,
   isNew,
-  save,
   Fields,
 }: CreateEntityScreenProps<T, S>) {
   const navigation = useTypedNavigation<S>();
@@ -65,7 +67,11 @@ export function CreateEntityScreen<
   }, [getDefaultValues, route]);
 
   const onValid = async (values: T) => {
-    await save(values, route);
+    if (isNew(route)) {
+      handleNewEntity(values, route);
+    } else {
+      handleEntityUpdate(values, route);
+    }
     navigation.goBack();
   };
 

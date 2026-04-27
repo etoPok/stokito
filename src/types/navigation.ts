@@ -4,12 +4,13 @@ import { Product } from '../domain/product';
 import { InventoryProduct } from '../domain/inventoryProduct';
 import { Inventory } from '../domain/inventory';
 import { SaleDetailsByProduct } from '../domain/saleDetails';
+import { ScreenMode } from './screenMode';
 
 export type RootStackParamList = {
   HomeScreen: undefined;
   RefundScreen: undefined;
   CheckoutScreen: undefined;
-  ProductsScreen: undefined;
+  ProductsScreen: ScreenMode;
   ConfirmSaleScreen: { saleId: string; saleDetails: SaleDetailsByProduct };
   SalesScreen: undefined;
   InventoriesScreen: undefined;

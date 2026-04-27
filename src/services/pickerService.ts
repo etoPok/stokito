@@ -15,3 +15,7 @@ export function resolvePicker<T>(key: string, value: T | null) {
     resolvers.delete(key);
   }
 }
+
+export function cancelPicker(key: string): void {
+  resolvePicker(key, null);
+}

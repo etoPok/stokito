@@ -25,10 +25,7 @@ export type InventoryProductFormFieldType = {
   productCode: ProductCode[];
 };
 
-export function InventoryProductFormFields({
-  editable,
-  isNew,
-}: FormFieldsProps) {
+export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
   const {
     control,
     formState: { errors },
@@ -38,8 +35,12 @@ export function InventoryProductFormFields({
   const { inventories } = useInventories();
   const navigation = useTypedNavigation<'InventoryProductScreen'>();
 
-  const [costPriceText, setCostPriceText] = useState<string>('');
-  const [salePriceText, setSalePriceText] = useState<string>('');
+  const [salePriceText, setSalePriceText] = useState<string>(
+    ensureCurrencyFormat(getValues().inventoryProduct.salePrice!)
+  );
+  const [costPriceText, setCostPriceText] = useState<string>(
+    ensureCurrencyFormat(getValues().inventoryProduct.costPrice!)
+  );
 
   return (
     <View style={styles.container}>
@@ -56,7 +57,7 @@ export function InventoryProductFormFields({
                 placeholder="Nombre del producto"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}
-                editable={editable}
+                editable={editableEntity}
               />
             </>
           )}
@@ -85,7 +86,7 @@ export function InventoryProductFormFields({
                   setCostPriceText(ensureCurrencyFormat(text));
                   onChange(toUnits(text));
                 }}
-                editable={editable}
+                editable={editableEntity}
               />
             </>
           )}
@@ -114,7 +115,7 @@ export function InventoryProductFormFields({
                   setSalePriceText(ensureCurrencyFormat(text));
                   onChange(toUnits(text));
                 }}
-                editable={editable}
+                editable={editableEntity}
               />
             </>
           )}
@@ -129,29 +130,29 @@ export function InventoryProductFormFields({
       <View style={styles.field}>
         <Controller
           control={control}
-          name="inventoryProduct.stok"
+          name="inventoryProduct.stock"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Stock</Text>
               <TextInput
                 style={styles.input}
                 value={
-                  getValues().inventoryProduct.stok !== undefined
-                    ? String(getValues().inventoryProduct.stok)
+                  getValues().inventoryProduct.stock !== undefined
+                    ? String(getValues().inventoryProduct.stock)
                     : undefined
                 }
                 keyboardType="numeric"
                 placeholder="Cantidad disponible"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}
-                editable={editable}
+                editable={editableEntity}
               />
             </>
           )}
         />
-        {errors.inventoryProduct?.stok && (
+        {errors.inventoryProduct?.stock && (
           <Text style={styles.errorMessage}>
-            {errors.inventoryProduct.stok.message}
+            {errors.inventoryProduct.stock.message}
           </Text>
         )}
       </View>
@@ -169,7 +170,7 @@ export function InventoryProductFormFields({
                 placeholder="Descripción del producto"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}
-                editable={editable}
+                editable={editableEntity}
                 multiline
               />
             </>
@@ -192,7 +193,7 @@ export function InventoryProductFormFields({
               titleStyle={appAccordionStyles.buttonText}
               buttonContainerStyle={appAccordionStyles.buttonContainer}
               buttonStyle={appAccordionStyles.button}
-              disabled={!editable}
+              disabled={!editableEntity}
             >
               {({ sendExpandedValue }) => (
                 <View style={appAccordionStyles.dropdown}>
