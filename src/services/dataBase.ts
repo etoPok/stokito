@@ -22,27 +22,37 @@ class Database {
 
   async createDatabase() {
     await Database.instance!.db!.execAsync(`
+      PRAGMA journal_mode = WAL;
       PRAGMA foreign_keys = ON;
 
-      CREATE TABLE IF NOT EXISTS product_definition (
+      CREATE TABLE IF NOT EXISTS product (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         description TEXT,
         is_discontinued INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS product_variant (
+        id TEXT PRIMARY KEY,
+        product_id TEXT NOT NULL,
+        variant_name TEXT NOT NULL,
         sale_price INTEGER NOT NULL,
         cost_price INTEGER NOT NULL,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+        FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
       );
 
       CREATE TABLE IF NOT EXISTS product_code (
         id TEXT PRIMARY KEY,
-        product_id TEXT NOT NULL,
+        product_variant_id TEXT NOT NULL,
         code TEXT NOT NULL,
         code_type TEXT NOT NULL,
         is_primary INTEGER NOT NULL CHECK(is_primary IN (0, 1)) DEFAULT 0,
 
         UNIQUE(code),
-        FOREIGN KEY (product_id) REFERENCES product_definition(id) ON DELETE CASCADE
+        FOREIGN KEY (product_variant_id) REFERENCES product_variant(id) ON DELETE CASCADE
       );
 
       CREATE TABLE IF NOT EXISTS inventory (
@@ -52,20 +62,20 @@ class Database {
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
 
-      CREATE TABLE IF NOT EXISTS inventory_product (
+      CREATE TABLE IF NOT EXISTS inventory_stock (
         id TEXT PRIMARY KEY,
         inventory_id TEXT NOT NULL,
-        product_id TEXT NOT NULL,
+        product_variant_id TEXT NOT NULL,
         stock INTEGER NOT NULL DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
 
         FOREIGN KEY (inventory_id)
           REFERENCES inventory(id) ON DELETE CASCADE,
 
-        FOREIGN KEY (product_id)
-          REFERENCES product_definition(id) ON DELETE CASCADE,
+        FOREIGN KEY (product_variant_id)
+          REFERENCES product_variant(id) ON DELETE CASCADE,
 
-        UNIQUE (inventory_id, product_id)
+        UNIQUE (inventory_id, product_variant_id)
       );
 
       CREATE TABLE IF NOT EXISTS sale (
@@ -81,7 +91,6 @@ class Database {
         sale_price INTEGER NOT NULL,
         quantity INTEGER NOT NULL,
         subtotal INTEGER NOT NULL,
-        is_voided INTEGER NOT NULL DEFAULT 0,
 
         FOREIGN KEY (sale_id)
           REFERENCES sale(id) ON DELETE CASCADE

@@ -1,41 +1,31 @@
 import { Inventory } from './inventory';
+import { InventoryStock } from './inventoryStock';
+import { ProductDefinition } from './productDefinition';
+import { ProductCode } from './productCode';
+import { ProductVariant } from './productVariant';
 import { EntityResolver } from './resolver';
 
-export type InventoryProduct = {
-  id: string | undefined;
-  productId: string | undefined;
-  name: string | undefined;
-  salePrice: number | undefined;
-  costPrice: number | undefined;
-  description: string | undefined;
-  isDiscontinued: boolean | undefined;
-  createdAt: string | undefined;
-  stock: number | undefined;
-  inventory: Inventory | undefined;
-};
+export type InventoryProduct = ProductDefinition &
+  InventoryStock & {
+    productVariants: ProductVariant[];
+    inventory: Inventory;
+    productCodes: ProductCode[];
+  };
 
 type InventoryProductRequired = Pick<
   InventoryProduct,
-  | 'id'
-  | 'name'
-  | 'salePrice'
-  | 'costPrice'
-  | 'isDiscontinued'
-  | 'stock'
-  | 'inventory'
+  'name' | 'stock' | 'productVariants' | 'inventory' | 'productCodes'
 >;
 
 const inventoryProductRequiredFieldsMessages: Record<
   keyof InventoryProductRequired,
   string
 > = {
-  id: 'El producto de inventario tiene un id no definido',
-  name: 'El nombre del producto es requerido',
-  salePrice: 'El precio de venta del producto es requerido',
-  costPrice: 'El precio de costo del producto es requerido',
-  isDiscontinued: 'Debe especificar si el producto esta descontinuado',
-  stock: 'El stok del producto es requerido',
-  inventory: 'El inventario del producto es un campo requerido',
+  name: 'El nombre del producto es un campo requerido',
+  stock: 'El stok del producto es un campo requerido',
+  productVariants: 'El producto debe tener a lo menos una variante',
+  inventory: 'El inventario es un campo requerido',
+  productCodes: 'El producto debe tener a lo menos un codigo',
 };
 
 export const inventoryProductResolver: EntityResolver<InventoryProduct> = {

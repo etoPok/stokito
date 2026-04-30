@@ -1,30 +1,26 @@
-import { ProductCode } from './productCode';
-import { ProductDefinition } from './productDefinition';
-import { ProductVariant } from './productVariant';
+import { Inventory } from './inventory';
 import { EntityResolver } from './resolver';
 
-export type Product = ProductDefinition & {
-  productVariants: ProductVariant[];
-  productCodes: ProductCode[];
+export type InventoryStock = {
+  id: string | undefined;
+  stock: number | undefined;
+  inventory: Inventory | undefined;
+  createdAt: string | undefined;
 };
 
-type InventoryProductRequired = Pick<
-  Product,
-  'name' | 'productVariants' | 'productCodes'
->;
+type InventoryProductRequired = Pick<InventoryStock, 'stock' | 'inventory'>;
 
 const inventoryProductRequiredFieldsMessages: Record<
   keyof InventoryProductRequired,
   string
 > = {
-  name: 'El nombre del producto es un campo requerido',
-  productVariants: 'El producto debe tener a lo menos una variante',
-  productCodes: 'El producto debe tener a lo menos un codigo',
+  stock: 'El stok del producto es requerido',
+  inventory: 'El inventario del producto es un campo requerido',
 };
 
-export const inventoryProductResolver: EntityResolver<Product> = {
+export const inventoryProductResolver: EntityResolver<InventoryStock> = {
   entityName: 'inventoryProduct',
-  resolver: (values: Product | Product[]) => {
+  resolver: (values: InventoryStock | InventoryStock[]) => {
     const isEmpty = (value: unknown): boolean =>
       value === undefined ||
       value === null ||
@@ -32,7 +28,7 @@ export const inventoryProductResolver: EntityResolver<Product> = {
       (typeof value === 'number' && Number.isNaN(value));
 
     type FieldErrors = Partial<
-      Record<keyof Product, { type: string; message: string }>
+      Record<keyof InventoryStock, { type: string; message: string }>
     >;
 
     if (Array.isArray(values)) {

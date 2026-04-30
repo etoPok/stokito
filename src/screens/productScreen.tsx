@@ -7,9 +7,10 @@ import {
 } from '../components/productFormFields';
 import { DefaultValues } from 'react-hook-form';
 import { useProducts } from '../hooks/productContext';
-import repository from '../services/repositories';
 import { productCodeResolver } from '../domain/productCode';
 import { productResolver } from '../domain/product';
+import { getProductCodes } from '../services/repoProductCode';
+import { updateProduct } from '../services/repoProduct';
 
 export function ProductScreen() {
   const { addProduct } = useProducts();
@@ -22,9 +23,7 @@ export function ProductScreen() {
       isNew={(route) => route.params.product === undefined}
       getDefaultValues={async (route) => {
         if (route.params.product) {
-          const codes = await repository.fetchProductCodes(
-            route.params.product.id!
-          );
+          const codes = await getProductCodes(route.params.product.id!);
           return {
             product: route.params.product,
             productCode: codes,
@@ -59,7 +58,7 @@ export function ProductScreen() {
         );
       }}
       handleEntityUpdate={async (values, route) => {
-        await repository.updateProduct(
+        await updateProduct(
           values.product.id!,
           values.product.name!,
           values.product.description!,

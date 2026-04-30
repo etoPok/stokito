@@ -4,8 +4,6 @@ interface StokitoDatabase {
   createProduct(
     id: string,
     name: string,
-    salePrice: number,
-    costPrice: number,
     description: string | undefined,
     isDiscontinued: boolean,
     createdAt: string
@@ -17,7 +15,23 @@ interface StokitoDatabase {
     id: string,
     name?: string,
     description?: string,
-    isDiscontinued?: boolean,
+    isDiscontinued?: boolean
+  ): Promise<number>;
+
+  createProductVariant(
+    id: string,
+    variantName: string,
+    salePrice: number,
+    costPrice: number,
+    createdAt: string
+  ): Promise<string>;
+  deleteProductVariant(id: string): Promise<number>;
+  getProductVariant(id: string): Promise<any>;
+  getAllProductVariants(): Promise<any[]>;
+  getProductVariantByProduct(productId: string): Promise<any>;
+  updateProductVariant(
+    id: string,
+    variantName?: string,
     salePrice?: number,
     costPrice?: number
   ): Promise<number>;
@@ -37,16 +51,22 @@ interface StokitoDatabase {
     location?: string
   ): Promise<number>;
 
-  createInventoryProduct(
+  createInventoryStock(
     id: string,
-    productId: string,
+    productVariantId: string,
     inventoryId: string,
     stock: number,
     createdAt: string
   ): Promise<number>;
-  getInventoryProducts(inventoryId: string): Promise<any[]>;
-  updateInventoryProduct(
+  deleteInventoryStock(id: string): Promise<number>;
+  getAllInventoryStocksByInventory(inventoryId: string): Promise<any[]>;
+  getAllInventoryStocksByProductVariant(
+    productVariantId: string
+  ): Promise<any[]>;
+  getAllInventoryStocks(): Promise<any[]>;
+  updateInventoryStock(
     id: string,
+    productVariantId?: string,
     inventoryId?: string,
     stock?: number
   ): Promise<number>;
@@ -59,8 +79,7 @@ interface StokitoDatabase {
     productName: string,
     price: number,
     subtotal: number,
-    quantity: number,
-    isVoided: boolean
+    quantity: number
   ): Promise<string>;
   getAllSaleDetails(): Promise<any[]>;
 
@@ -79,15 +98,14 @@ interface StokitoDatabase {
     isPrimary?: boolean
   ): Promise<number>;
   getProductByCode(code: string): Promise<any>;
-  getProductCodes(productId: string): Promise<any[]>;
+  getAllCodesByProduct(productVariantId: string): Promise<any[]>;
+  getAllProductCodes(): Promise<any[]>;
 }
 
 class ApiStokitoDatabase implements StokitoDatabase {
   async createProduct(
     id: string,
     name: string,
-    salePrice: number,
-    costPrice: number,
     description: string | undefined,
     isDiscontinued: boolean,
     createdAt: string
@@ -97,18 +115,10 @@ class ApiStokitoDatabase implements StokitoDatabase {
     // result -> resusable SQL statment
     await db.runAsync(
       `
-        INSERT INTO product_definition (id, name, sale_price, cost_price, description, is_discontinued, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?);
+        INSERT INTO product (id, name, description, is_discontinued, created_at)
+        VALUES (?, ?, ?, ?, ?);
       `,
-      [
-        id,
-        name,
-        salePrice,
-        costPrice,
-        description ?? null,
-        Number(isDiscontinued),
-        createdAt,
-      ]
+      [id, name, description ?? null, Number(isDiscontinued), createdAt]
     );
     return id;
   }
@@ -116,10 +126,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
   async deleteProduct(id: string): Promise<number> {
     const db = (await DB.getInstance('')).connection;
 
-    const result = await db.runAsync(
-      `DELETE FROM product_definition WHERE id = ?`,
-      [id]
-    );
+    const result = await db.runAsync(`DELETE FROM product WHERE id = ?`, [id]);
 
     if (result.changes === 0) {
       throw new Error('DELETE_PRODUCT_NOT_FOUND');
@@ -136,7 +143,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     const db = (await DB.getInstance('')).connection;
     const row = await db.getFirstAsync(
       `
-      SELECT * FROM product_definition WHERE id = ?;
+      SELECT * FROM product WHERE id = ?;
     `,
       [id]
     );
@@ -150,7 +157,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     const db = (await DB.getInstance('')).connection;
     const rows = await db.getAllAsync(
       `
-      SELECT * FROM product_definition;
+      SELECT * FROM product;
       `,
       []
     );
@@ -161,9 +168,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     id: string,
     name?: string,
     description?: string,
-    isDiscontinued?: boolean,
-    salePrice?: number,
-    costPrice?: number
+    isDiscontinued?: boolean
   ): Promise<number> {
     const db = (await DB.getInstance('')).connection;
 
@@ -185,6 +190,61 @@ class ApiStokitoDatabase implements StokitoDatabase {
       values.push(Number(isDiscontinued));
     }
 
+    if (fields.length === 0) {
+      return 0;
+    }
+
+    values.push(id);
+
+    const query = `
+      UPDATE product
+      SET ${fields.join(', ')}
+      WHERE id = ?
+    `;
+
+    const result = await db.runAsync(query, values);
+
+    if (result.changes === 0) {
+      throw new Error('UPDATE_PRODUCT_NO_CHANGES');
+    }
+
+    return result.changes;
+  }
+
+  async createProductVariant(
+    id: string,
+    variantName: string,
+    salePrice: number,
+    costPrice: number,
+    createdAt: string
+  ): Promise<string> {
+    const db = (await DB.getInstance('')).connection;
+    await db.runAsync(
+      `
+        INSERT INTO product_variant (id, variant_name, sale_price, cost_price, created_at)
+        VALUES (?, ?, ?, ?, ?, ?);
+      `,
+      [id, variantName, salePrice, costPrice, createdAt]
+    );
+    return id;
+  }
+
+  async updateProductVariant(
+    id: string,
+    variantName?: string,
+    salePrice?: number,
+    costPrice?: number
+  ): Promise<number> {
+    const db = (await DB.getInstance('')).connection;
+
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    if (variantName !== undefined) {
+      fields.push('variant_name = ?');
+      values.push(variantName);
+    }
+
     if (salePrice !== undefined) {
       fields.push('sale_price = ?');
       values.push(salePrice);
@@ -202,19 +262,65 @@ class ApiStokitoDatabase implements StokitoDatabase {
     values.push(id);
 
     const query = `
-    UPDATE product_definition
-    SET ${fields.join(', ')}
-    WHERE id = ?
-  `;
+      UPDATE product_variant
+      SET ${fields.join(', ')}
+      WHERE id = ?
+    `;
 
     const result = await db.runAsync(query, values);
 
     if (result.changes === 0) {
-      throw new Error('UPDATE_PRODUCT_NO_CHANGES');
+      throw new Error('UPDATE_PRODUCT_VARIANT_NO_CHANGES');
     }
 
     return result.changes;
   }
+
+  async deleteProductVariant(id: string): Promise<number> {
+    const db = (await DB.getInstance('')).connection;
+
+    const result = await db.runAsync(
+      `DELETE FROM product_variant WHERE id = ?`,
+      [id]
+    );
+
+    if (result.changes === 0) {
+      throw new Error('DELETE_PRODUCT_VARIANT_NOT_FOUND');
+    }
+
+    if (result.changes > 1) {
+      throw new Error('DELETE_PRODUCT_VARIANT_UNEXPECTED_MULTIPLE_CHANGES');
+    }
+
+    return result.changes;
+  }
+
+  async getAllProductVariants(): Promise<any[]> {
+    const db = (await DB.getInstance('')).connection;
+    const rows = await db.getAllAsync(
+      `
+      SELECT * FROM product_variant;
+      `,
+      []
+    );
+    return rows ?? [];
+  }
+
+  async getProductVariant(id: string): Promise<any> {
+    const db = (await DB.getInstance('')).connection;
+    const row = await db.getFirstAsync(
+      `
+      SELECT * FROM product_variant WHERE id = ?;
+    `,
+      [id]
+    );
+    if (!row) {
+      throw new Error(`GET_PRODUCT_VARIANT_NOT_FOUND`);
+    }
+    return row;
+  }
+
+  async getProductVariantByProduct(productId: string): Promise<any> {}
 
   async createInventory(
     id: string,
@@ -303,10 +409,10 @@ class ApiStokitoDatabase implements StokitoDatabase {
     values.push(id);
 
     const query = `
-    UPDATE inventory
-    SET ${fields.join(', ')}
-    WHERE id = ?
-  `;
+      UPDATE inventory
+      SET ${fields.join(', ')}
+      WHERE id = ?
+    `;
 
     const result = await db.runAsync(query, values);
 
@@ -317,9 +423,9 @@ class ApiStokitoDatabase implements StokitoDatabase {
     return result.changes;
   }
 
-  async createInventoryProduct(
+  async createInventoryStock(
     id: string,
-    productId: string,
+    productVariantId: string,
     inventoryId: string,
     stock: number,
     createdAt: string
@@ -327,39 +433,62 @@ class ApiStokitoDatabase implements StokitoDatabase {
     const db = (await DB.getInstance('')).connection;
     const result = await db.runAsync(
       `
-      INSERT INTO inventory_product (id, product_id, inventory_id, stock, created_at)
+      INSERT INTO inventory_stock (id, product_variant_id, inventory_id, stock, created_at)
       VALUES (?, ?, ?, ?, ?);
     `,
-      [id, productId, inventoryId, stock, createdAt]
+      [id, productVariantId, inventoryId, stock, createdAt]
     );
     return result.lastInsertRowId;
   }
 
-  async getInventoryProducts(inventoryId: string): Promise<any[]> {
+  async deleteInventoryStock(id: string): Promise<number> {
+    const db = (await DB.getInstance('')).connection;
+
+    const result = await db.runAsync(
+      `DELETE FROM inventory_stock WHERE id = ?`,
+      [id]
+    );
+
+    if (result.changes === 0) {
+      throw new Error('DELETE_INVENTORY_STOCK_NOT_FOUND');
+    }
+
+    if (result.changes > 1) {
+      throw new Error('DELETE_INVENTORY_STOCK_UNEXPECTED_MULTIPLE_CHANGES');
+    }
+
+    return result.changes;
+  }
+
+  async getAllInventoryStocksByInventory(inventoryId: string): Promise<any[]> {
     const db = (await DB.getInstance('')).connection;
     const rows = await db.getAllAsync(
       `
-      SELECT
-        pd.id AS product_id,
-        pd.name,
-        pd.sale_price,
-        pd.cost_price,
-        pd.is_discontinued,
-        pd.description,
-        ii.id,
-        ii.created_at,
-        ii.stock
-      FROM inventory_product ii
-      JOIN product_definition pd ON pd.id = ii.product_id
-      WHERE ii.inventory_id = ?;
+      SELECT * FROM inventory_stock
+      WHERE inventory_id = ?;
     `,
       [inventoryId]
     );
     return rows ?? [];
   }
 
-  async updateInventoryProduct(
+  async getAllInventoryStocksByProductVariant(
+    productVariantId: string
+  ): Promise<any[]> {
+    const db = (await DB.getInstance('')).connection;
+    const rows = await db.getAllAsync(
+      `
+      SELECT * FROM inventory_stock
+      WHERE product_variant_id = ?;
+    `,
+      [productVariantId]
+    );
+    return rows ?? [];
+  }
+
+  async updateInventoryStock(
     id: string,
+    productVariantId?: string,
     inventoryId?: string,
     stock?: number
   ): Promise<number> {
@@ -367,6 +496,11 @@ class ApiStokitoDatabase implements StokitoDatabase {
 
     const fields: string[] = [];
     const values: any[] = [];
+
+    if (productVariantId !== undefined) {
+      fields.push('product_variant_id = ?');
+      values.push(productVariantId);
+    }
 
     if (stock !== undefined) {
       fields.push('stock = ?');
@@ -385,15 +519,15 @@ class ApiStokitoDatabase implements StokitoDatabase {
     values.push(id);
 
     const query = `
-    UPDATE inventory_product
-    SET ${fields.join(', ')}
-    WHERE id = ?
-  `;
+      UPDATE inventory_stock
+      SET ${fields.join(', ')}
+      WHERE id = ?
+    `;
 
     const result = await db.runAsync(query, values);
 
     if (result.changes === 0) {
-      throw new Error('UPDATE_INVENTORY_PRODUCT_NO_CHANGES');
+      throw new Error('UPDATE_INVENTORY_STOCK_NO_CHANGES');
     }
 
     return result.changes;
@@ -428,8 +562,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     productName: string,
     price: number,
     subtotal: number,
-    quantity: number,
-    isVoided: boolean
+    quantity: number
   ): Promise<string> {
     const db = (await DB.getInstance('')).connection;
     await db.runAsync(
@@ -437,7 +570,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
       INSERT INTO sale_detail (id, sale_id, product_name, sale_price, quantity, subtotal)
       VALUES (?, ?, ?, ?, ?, ?);
     `,
-      [id, saleId, productName, price, quantity, subtotal, Number(isVoided)]
+      [id, saleId, productName, price, quantity, subtotal]
     );
     return id;
   }
@@ -512,10 +645,10 @@ class ApiStokitoDatabase implements StokitoDatabase {
     values.push(id);
 
     const query = `
-    UPDATE product_code
-    SET ${fields.join(', ')}
-    WHERE id = ?
-  `;
+      UPDATE product_code
+      SET ${fields.join(', ')}
+      WHERE id = ?
+    `;
 
     const result = await db.runAsync(query, values);
 
@@ -549,7 +682,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     const result = await db.getFirstAsync(
       `
       SELECT pd.*
-      FROM product_definition pd
+      FROM product pd
       JOIN product_code pc
         ON pd.id = pc.product_id
       WHERE pc.code = ?;
@@ -560,16 +693,28 @@ class ApiStokitoDatabase implements StokitoDatabase {
     return result;
   }
 
-  async getProductCodes(productId: string): Promise<any[]> {
+  async getAllCodesByProduct(productVariantId: string): Promise<any[]> {
     const db = (await DB.getInstance('')).connection;
     const rows = await db.getAllAsync(
       `
       SELECT id, code, code_type, is_primary
       FROM product_code
-      WHERE product_id = ?
+      WHERE product_variant_id = ?
       ORDER BY is_primary DESC;
     `,
-      [productId]
+      [productVariantId]
+    );
+    return rows ?? [];
+  }
+
+  async getAllProductCodes(): Promise<any[]> {
+    const db = (await DB.getInstance('')).connection;
+    const rows = await db.getAllAsync(
+      `
+      SELECT *
+      FROM product_code
+    `,
+      []
     );
     return rows ?? [];
   }
