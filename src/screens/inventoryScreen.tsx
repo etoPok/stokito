@@ -1,45 +1,52 @@
 import { CreateEntityScreen } from '../components/createEntityScreen';
-import { createResolver } from '../domain/resolver';
-import { v4 as uuidv4 } from 'uuid';
-import {
-  InventoryFormFields,
-  InventoryFormFIeldsType,
-} from '../components/inventoryFormFields';
-import { useInventories } from '../hooks/inventoryContext';
-import { inventoryResolver } from '../domain/inventory';
+import { InventoryFormFields } from '../components/inventoryFormFields';
+import { useCreateInventory, useUpdateInventory } from '../hooks/useInventory';
+import { Inventory, SchemaInventory } from '../domain/inventory';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 export function InventoryScreen() {
-  const { addInventory } = useInventories();
+  const { mutateAsync: createInventory } = useCreateInventory();
+  const { mutateAsync: updateInventory } = useUpdateInventory();
 
   return (
-    <CreateEntityScreen<InventoryFormFIeldsType, 'InventoryScreen'>
+    <CreateEntityScreen<Inventory, 'InventoryScreen'>
       titleNew="Nuevo inventario"
       titleView="Inventario"
-      resolver={createResolver([inventoryResolver])}
+      resolver={zodResolver(SchemaInventory)}
       isNew={(route) => route.params.inventory === undefined}
       getDefaultValues={async (route) => {
-        if (route.params.inventory) {
-          return { inventory: route.params.inventory };
-        } else {
-          return {
-            inventory: {
-              id: uuidv4(),
+        return route.params.inventory === undefined
+          ? {
+              id: '',
               name: undefined,
               location: undefined,
-              createdAt: undefined,
-            },
-          };
-        }
+              createdAt: '',
+            }
+          : route.params.inventory;
       }}
       handleNewEntity={async (values, route) => {
-        await addInventory({
-          id: values.inventory.id,
-          name: values.inventory.name,
-          location: values.inventory.location,
-          createdAt: '',
-        });
+        try {
+          await createInventory({
+            name: values.name,
+            location: values.location,
+          });
+        } catch (error) {
+          console.log(error);
+        }
       }}
-      handleEntityUpdate={async (values, route) => {}}
+      handleEntityUpdate={async (values, route) => {
+        try {
+          await updateInventory({
+            id: values.id,
+            changes: {
+              name: values.name,
+              location: values.location,
+            },
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      }}
       Fields={InventoryFormFields}
     />
   );

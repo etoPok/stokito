@@ -13,12 +13,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTypedNavigation } from '../types';
 import { useCallback } from 'react';
 import { CameraScanner } from './../components/cameraScanner.android';
-import repository from '../services/repositories';
 import { useSale } from '../hooks/useSale';
 import { ensureCurrencyFormat } from '../utils/price';
 import { useStyles } from '../hooks/useStyles';
 import { AppTheme } from '../theme/themes';
 import { Header } from '../components/header';
+import { getProductByCode } from '../services/repoProductCode';
+import { createSale, createSaleDetailByProducts } from '../services/repoSale';
 
 type ProductItemProps = {
   name: string;
@@ -166,7 +167,7 @@ export function CheckoutScreen() {
   const onCodeScanned = useCallback(
     async (code: string) => {
       try {
-        const product = await repository.fetchProductByCode(code);
+        const product = await getProductByCode(code);
         console.log(`Scanned product ${product.name}, Code: ${code}`);
         addProduct(product);
       } catch (error) {
@@ -177,10 +178,9 @@ export function CheckoutScreen() {
   );
 
   const handleFinishSale = async () => {
-    const date = new Date().toISOString();
     try {
-      await repository.addSale(getSnapshot().saleId.current!, date, getTotal());
-      await repository.postSaleDetails(
+      await createSale(getSnapshot().saleId.current!, getTotal());
+      await createSaleDetailByProducts(
         getSnapshot().saleDetails.current,
         getSnapshot().saleId.current!
       );

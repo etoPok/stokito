@@ -1,68 +1,61 @@
 import { Text, View, TextInput, StyleSheet } from 'react-native';
 import { Controller, useFormContext } from 'react-hook-form';
-import { FormFieldsProps } from './entityForm';
+import { useEntityForm } from '../hooks/useEntityForm';
 import { Inventory } from '../domain/inventory';
 
-export type InventoryFormFIeldsType = {
-  inventory: Inventory;
-};
-
-export function InventoryFormFields({ editable }: FormFieldsProps) {
+export function InventoryFormFields() {
   const {
     control,
     formState: { errors },
     getValues,
-  } = useFormContext<InventoryFormFIeldsType>();
+  } = useFormContext<Inventory>();
+  const { editableEntity } = useEntityForm();
 
   return (
     <View style={styles.container}>
       <View style={styles.field}>
         <Controller
           control={control}
-          name="inventory.name"
+          name="name"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Nombre</Text>
               <TextInput
                 style={styles.input}
-                value={getValues().inventory.name}
+                value={getValues().name}
                 placeholder="Nombre del producto"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}
-                editable={editable}
+                editable={editableEntity}
               />
             </>
           )}
         />
-        {errors.inventory?.name && (
-          <Text style={styles.errorMessage}>
-            {errors.inventory.name.message}
-          </Text>
+        {errors.name && (
+          <Text style={styles.errorMessage}>{errors.name.message}</Text>
         )}
       </View>
 
       <View style={styles.field}>
         <Controller
           control={control}
-          name="inventory.location"
+          name="location"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Ubicación</Text>
               <TextInput
                 style={styles.input}
-                value={getValues().inventory.location}
+                value={getValues().location}
                 placeholder="Ubicación de inventario"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}
-                editable={editable}
+                editable={editableEntity}
               />
             </>
           )}
         />
-        {errors.inventory?.location && (
-          <Text style={styles.errorMessage}>
-            {errors.inventory.location.message}
-          </Text>
+        {errors?.location && (
+          <Text style={styles.errorMessage}>{errors.location.message}</Text>
         )}
       </View>
     </View>

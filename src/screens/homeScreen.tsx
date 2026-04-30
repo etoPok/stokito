@@ -4,16 +4,12 @@ import {
   Text,
   TextStyle,
   ViewStyle,
-  Button,
   TouchableOpacity,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CardButton } from './../components/cardButton';
 import { RootStackParamList, useTypedNavigation } from '../types';
-import { useEffect } from 'react';
-import { useInventories } from '../hooks/inventoryContext';
-import { useProducts } from '../hooks/productContext';
 import { AppTheme } from '../theme/themes';
 import { useStyles } from '../hooks/useStyles';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,52 +29,32 @@ type OptionItem = {
 const options: OptionItem[] = [
   {
     id: '1',
-    title: 'Inventarios',
-    image: require('../assets/favicon.png'),
-    route: 'InventoriesScreen',
-    params: undefined,
-  },
-  {
-    id: '2',
     title: 'Productos',
     image: require('../assets/favicon.png'),
     route: 'ProductsScreen',
     params: { type: 'view' },
   },
   {
-    id: '3',
+    id: '2',
     title: 'Caja',
     image: require('../assets/favicon.png'),
     route: 'CheckoutScreen',
     params: undefined,
   },
-  {
-    id: '4',
-    title: 'Ventas',
-    image: require('../assets/favicon.png'),
-    route: 'SalesScreen',
-    params: undefined,
-  },
+  // {
+  //   id: '3',
+  //   title: 'Ventas',
+  //   image: require('../assets/favicon.png'),
+  //   route: 'SalesScreen',
+  //   params: undefined,
+  // },
 ];
 
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useTypedNavigation<'HomeScreen'>();
-  const { pullProducts } = useProducts();
-  const { pullInventories } = useInventories();
   const styles = useStyles(createStyles);
   const { theme } = useAppTheme();
-
-  useEffect(() => {
-    (async () => {
-      try {
-        await pullInventories();
-        await pullProducts();
-      } catch (error) {
-        console.log(error);
-      }
-    })();
-  }, []);
 
   return (
     <View
@@ -113,10 +89,12 @@ export function HomeScreen() {
 
       <FlatList
         style={styles.flatlistOptions}
+        contentContainerStyle={{
+          justifyContent: 'center',
+        }}
         data={options}
         keyExtractor={(item) => item.id}
-        columnWrapperStyle={{ justifyContent: 'center' }}
-        numColumns={2}
+        numColumns={1}
         renderItem={({ item }) => (
           <View style={styles.cardWrapper}>
             <CardButton
@@ -148,12 +126,12 @@ const createStyles = (theme: AppTheme) => ({
     fontWeight: 'bold',
   } satisfies TextStyle,
   flatlistOptions: {
-    paddingHorizontal: 12,
-  },
+    paddingHorizontal: 24,
+  } satisfies ViewStyle,
   cardWrapper: {
-    width: 170,
+    alignItems: 'stretch',
     height: 145,
     marginHorizontal: 4,
     paddingBottom: 8,
-  },
+  } satisfies ViewStyle,
 });

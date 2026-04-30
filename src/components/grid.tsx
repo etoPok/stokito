@@ -37,6 +37,9 @@ type Props<T> = {
   breakpoints?: Breakpoints;
   containerPadding?: number;
   itemMargin?: number;
+  onEndReached?: () => void;
+  onEndReachedThreshold?: number;
+  ListFooterComponent?: React.ReactElement | null;
 };
 
 export function Grid<T>({
@@ -46,6 +49,9 @@ export function Grid<T>({
   breakpoints,
   containerPadding = CONTAINER_HORIZONTAL_PADDING,
   itemMargin = ITEM_HORIZONTAL_MARGIN,
+  onEndReached,
+  onEndReachedThreshold,
+  ListFooterComponent,
 }: Props<T>) {
   const { width } = useWindowDimensions();
   const numColumns = useBreakpointColumns(breakpoints);
@@ -80,6 +86,9 @@ export function Grid<T>({
       contentContainerStyle={{
         paddingHorizontal: containerPadding,
       }}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={onEndReachedThreshold}
+      ListFooterComponent={ListFooterComponent}
     />
   );
 }

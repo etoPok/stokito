@@ -13,7 +13,6 @@ export type RootStackParamList = {
   ProductsScreen: ScreenMode;
   ConfirmSaleScreen: { saleId: string; saleDetails: SaleDetailsByProduct };
   SalesScreen: undefined;
-  InventoriesScreen: undefined;
   InventoryScreen: { inventory: Inventory | undefined };
   ProductScreen: { product: Product | undefined };
   InventoryProductScreen: { inventoryProduct: InventoryProduct | undefined };

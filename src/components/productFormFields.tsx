@@ -1,35 +1,30 @@
 import { Text, View, TextInput, Switch, StyleSheet } from 'react-native';
 import { Controller, useFormContext } from 'react-hook-form';
-import { Product } from '../domain/product';
 import { FormFieldsProps } from './entityForm';
 import { HandleCode } from './handleCode';
 import { useTypedNavigation } from '../types';
 import { ProductCode } from '../domain/productCode';
 import { CardCarousel } from './cardCarousel';
-import { useEntityForm } from '../hooks/entityFormContext';
+import { useEntityForm } from '../hooks/useEntityForm';
 import { v4 as uuid } from 'uuid';
 import { ensureCurrencyFormat, toUnits } from '../utils/price';
 import { useState } from 'react';
-
-export type ProductFormFieldsType = {
-  product: Product;
-  productCode: ProductCode[];
-};
+import { Product } from '../domain/product';
 
 export function ProductFormFields({ isNew }: FormFieldsProps) {
   const {
     control,
     formState: { errors },
     getValues,
-  } = useFormContext<ProductFormFieldsType>();
+  } = useFormContext<Product>();
   const { editableEntity } = useEntityForm();
   const navigation = useTypedNavigation<'ProductScreen'>();
 
   const [salePriceText, setSalePriceText] = useState<string>(
-    ensureCurrencyFormat(getValues().product.salePrice!)
+    ensureCurrencyFormat(getValues().salePrice)
   );
   const [costPriceText, setCostPriceText] = useState<string>(
-    ensureCurrencyFormat(getValues().product.costPrice!)
+    ensureCurrencyFormat(getValues().costPrice)
   );
 
   return (
@@ -37,13 +32,13 @@ export function ProductFormFields({ isNew }: FormFieldsProps) {
       <View style={styles.field}>
         <Controller
           control={control}
-          name="product.name"
+          name="name"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Nombre</Text>
               <TextInput
                 style={styles.input}
-                value={getValues().product.name}
+                value={getValues().name}
                 placeholder="Nombre del producto"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}
@@ -52,15 +47,15 @@ export function ProductFormFields({ isNew }: FormFieldsProps) {
             </>
           )}
         />
-        {errors.product?.name && (
-          <Text style={styles.errorMessage}>{errors.product.name.message}</Text>
+        {errors.name && (
+          <Text style={styles.errorMessage}>{errors.name.message}</Text>
         )}
       </View>
 
       <View style={styles.field}>
         <Controller
           control={control}
-          name="product.costPrice"
+          name="costPrice"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Costo de producto</Text>
@@ -79,17 +74,15 @@ export function ProductFormFields({ isNew }: FormFieldsProps) {
             </>
           )}
         />
-        {errors.product?.costPrice && (
-          <Text style={styles.errorMessage}>
-            {errors.product.costPrice.message}
-          </Text>
+        {errors.costPrice && (
+          <Text style={styles.errorMessage}>{errors.costPrice.message}</Text>
         )}
       </View>
 
       <View style={styles.field}>
         <Controller
           control={control}
-          name="product.salePrice"
+          name="salePrice"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Precio de venta</Text>
@@ -108,23 +101,21 @@ export function ProductFormFields({ isNew }: FormFieldsProps) {
             </>
           )}
         />
-        {errors.product?.salePrice && (
-          <Text style={styles.errorMessage}>
-            {errors.product.salePrice.message}
-          </Text>
+        {errors.salePrice && (
+          <Text style={styles.errorMessage}>{errors.salePrice.message}</Text>
         )}
       </View>
 
       <View style={styles.field}>
         <Controller
           control={control}
-          name="product.description"
+          name="description"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Descripción</Text>
               <TextInput
                 style={[styles.input, styles.multiline]}
-                value={getValues().product.description}
+                value={getValues().description}
                 placeholder="Descripción del producto"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}
@@ -134,18 +125,21 @@ export function ProductFormFields({ isNew }: FormFieldsProps) {
             </>
           )}
         />
+        {errors.description && (
+          <Text style={styles.errorMessage}>{errors.description.message}</Text>
+        )}
       </View>
 
       {!isNew && (
         <View style={styles.switchRow}>
           <Controller
             control={control}
-            name="product.isDiscontinued"
+            name="isDiscontinued"
             render={({ field: { onChange } }) => (
               <>
                 <Text style={styles.label}>Descontinuado</Text>
                 <Switch
-                  value={getValues().product.isDiscontinued}
+                  value={getValues().isDiscontinued}
                   onValueChange={(value) => onChange(value)}
                   disabled={!editableEntity}
                 />
@@ -157,24 +151,25 @@ export function ProductFormFields({ isNew }: FormFieldsProps) {
 
       <Controller
         control={control}
-        name="productCode"
+        name="codes"
         render={({ field: { onChange } }) => (
           <CardCarousel
-            data={getValues().productCode}
+            data={getValues().codes}
             renderItem={(item: ProductCode | null) => (
               <HandleCode
                 navigation={navigation}
                 code={item?.code}
                 handle={editableEntity}
                 handleChange={(code, codeType) => {
-                  if (getValues().productCode.length === 0) {
+                  if (getValues().codes.length === 0) {
                     onChange([
-                      ...getValues().productCode,
+                      ...getValues().codes,
                       {
                         id: uuid(),
                         code: code,
                         codeType: codeType,
                         isPrimary: true,
+                        createdAt: '',
                       } satisfies ProductCode,
                     ]);
                     return;
@@ -182,21 +177,22 @@ export function ProductFormFields({ isNew }: FormFieldsProps) {
                   if (item == null) return;
                   item.code = code;
                   item.codeType = codeType;
-                  onChange([...getValues().productCode]);
+                  onChange([...getValues().codes]);
                 }}
                 handleAdd={(code, codeType) => {
                   onChange([
-                    ...getValues().productCode,
+                    ...getValues().codes,
                     {
                       id: uuid(),
                       code: code,
                       codeType: codeType,
-                      isPrimary: getValues().productCode.length === 0,
+                      isPrimary: getValues().codes.length === 0,
+                      createdAt: '',
                     } satisfies ProductCode,
                   ]);
                 }}
                 handleRemove={() => {
-                  const newProductCode = getValues().productCode.filter(
+                  const newProductCode = getValues().codes.filter(
                     (pc) => pc.id !== item?.id
                   );
                   if (newProductCode) onChange(newProductCode);
@@ -206,8 +202,8 @@ export function ProductFormFields({ isNew }: FormFieldsProps) {
           />
         )}
       />
-      {errors.productCode && (
-        <Text style={styles.errorMessage}>{errors.productCode.message}</Text>
+      {errors.codes && (
+        <Text style={styles.errorMessage}>{errors.codes.message}</Text>
       )}
     </View>
   );

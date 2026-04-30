@@ -1,54 +1,18 @@
-import { EntityResolver } from './resolver';
+import { z } from 'zod';
 
-export type Inventory = {
-  id: string;
-  name: string;
-  location: string;
-  createdAt: string;
-};
+export const SchemaInventory = z.object({
+  id: z.string(),
+  name: z
+    .string()
+    .trim()
+    .min(1, 'El nombre no puede estar vacio')
+    .max(15, 'El nombre debe tener como maximo 15 caracteres'),
+  location: z
+    .string()
+    .trim()
+    .min(1, 'La ubicación no puede estar vacia')
+    .max(15, 'La ubicación debe tener un maximo de 15 caracteres'),
+  createdAt: z.string(),
+});
 
-type InventoryRequired = Pick<Inventory, 'id' | 'name' | 'location'>;
-
-const inventoryRequiredFieldMessages: Record<keyof InventoryRequired, string> =
-  {
-    id: 'El inventario tiene un id no definido',
-    name: 'El nombre del inventario es requerido',
-    location: 'La ubicación del inventario es requerida',
-  };
-
-export const inventoryResolver: EntityResolver<Inventory> = {
-  entityName: 'inventory',
-  resolver: (values: Inventory | Inventory[]) => {
-    const isEmpty = (value: unknown): boolean =>
-      value === undefined ||
-      value === null ||
-      (typeof value === 'string' && value.trim() === '') ||
-      (typeof value === 'number' && Number.isNaN(value));
-
-    type FieldErrors = Partial<
-      Record<keyof Inventory, { type: string; message: string }>
-    >;
-
-    if (Array.isArray(values)) {
-      return { type: 'manual', message: '' };
-    }
-
-    const errors: FieldErrors = {};
-
-    if (values && typeof values === 'object') {
-      const requiredKeys = Object.keys(
-        inventoryRequiredFieldMessages
-      ) as (keyof typeof inventoryRequiredFieldMessages)[];
-
-      for (const key of requiredKeys) {
-        if (isEmpty(values[key])) {
-          errors[key] = {
-            type: 'manual',
-            message: inventoryRequiredFieldMessages[key],
-          };
-        }
-      }
-    }
-    return errors;
-  },
-};
+export type Inventory = z.infer<typeof SchemaInventory>;

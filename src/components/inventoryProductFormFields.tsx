@@ -4,56 +4,69 @@ import {
   TextInput,
   Switch,
   Pressable,
-  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { Controller, useFormContext } from 'react-hook-form';
-import { AppAccordion, appAccordionStyles } from './appAccordion';
 import { InventoryProduct } from '../domain/inventoryProduct';
 import { FormFieldsProps } from './entityForm';
-import { useInventories } from '../hooks/inventoryContext';
 import { useTypedNavigation } from '../types';
 import { ProductCode } from '../domain/productCode';
-import { useEntityForm } from '../hooks/entityFormContext';
+import { useEntityForm } from '../hooks/useEntityForm';
 import { CardCarousel } from './cardCarousel';
 import { HandleCode } from './handleCode';
 import { v4 as uuid } from 'uuid';
 import { useState } from 'react';
 import { ensureCurrencyFormat, toUnits } from '../utils/price';
-
-export type InventoryProductFormFieldType = {
-  inventoryProduct: InventoryProduct;
-  productCode: ProductCode[];
-};
+import { useInventories } from '../hooks/useInventory';
+import { Inventory } from '../domain/inventory';
+import { useAppTheme } from '../hooks/useAppTheme';
+import { AppTheme } from '../theme/themes';
+import { useStyles } from '../hooks/useStyles';
 
 export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
   const {
     control,
     formState: { errors },
     getValues,
-  } = useFormContext<InventoryProductFormFieldType>();
+  } = useFormContext<InventoryProduct>();
   const { editableEntity } = useEntityForm();
-  const { inventories } = useInventories();
   const navigation = useTypedNavigation<'InventoryProductScreen'>();
+  const { theme } = useAppTheme();
+  const styles = useStyles(createStyles);
 
   const [salePriceText, setSalePriceText] = useState<string>(
-    ensureCurrencyFormat(getValues().inventoryProduct.salePrice!)
+    ensureCurrencyFormat(getValues().salePrice!)
   );
   const [costPriceText, setCostPriceText] = useState<string>(
-    ensureCurrencyFormat(getValues().inventoryProduct.costPrice!)
+    ensureCurrencyFormat(getValues().costPrice!)
   );
+
+  const {
+    data: inventoryData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInventories();
+  const inventories: Inventory[] =
+    inventoryData?.pages.flatMap((p) => p.items) ?? [];
+
+  const [selectedInventory, setSelectedInventory] = useState<boolean>(false);
 
   return (
     <View style={styles.container}>
       <View style={styles.field}>
         <Controller
           control={control}
-          name="inventoryProduct.name"
+          name="name"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Nombre</Text>
               <TextInput
                 style={styles.input}
-                value={getValues().inventoryProduct.name}
+                value={getValues().name}
                 placeholder="Nombre del producto"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}
@@ -62,17 +75,15 @@ export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
             </>
           )}
         />
-        {errors.inventoryProduct?.name && (
-          <Text style={styles.errorMessage}>
-            {errors.inventoryProduct.name.message}
-          </Text>
+        {errors.name && (
+          <Text style={styles.errorMessage}>{errors.name.message}</Text>
         )}
       </View>
 
       <View style={styles.field}>
         <Controller
           control={control}
-          name="inventoryProduct.costPrice"
+          name="costPrice"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Costo de producto</Text>
@@ -91,17 +102,15 @@ export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
             </>
           )}
         />
-        {errors.inventoryProduct?.costPrice && (
-          <Text style={styles.errorMessage}>
-            {errors.inventoryProduct.costPrice.message}
-          </Text>
+        {errors.costPrice && (
+          <Text style={styles.errorMessage}>{errors.costPrice.message}</Text>
         )}
       </View>
 
       <View style={styles.field}>
         <Controller
           control={control}
-          name="inventoryProduct.salePrice"
+          name="salePrice"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Precio de venta</Text>
@@ -120,39 +129,37 @@ export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
             </>
           )}
         />
-        {errors.inventoryProduct?.salePrice && (
-          <Text style={styles.errorMessage}>
-            {errors.inventoryProduct.salePrice.message}
-          </Text>
+        {errors.salePrice && (
+          <Text style={styles.errorMessage}>{errors.salePrice.message}</Text>
         )}
       </View>
 
       <View style={styles.field}>
         <Controller
           control={control}
-          name="inventoryProduct.stock"
+          name="inventoryStock.stock"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Stock</Text>
               <TextInput
                 style={styles.input}
                 value={
-                  getValues().inventoryProduct.stock !== undefined
-                    ? String(getValues().inventoryProduct.stock)
+                  getValues().inventoryStock.stock !== undefined
+                    ? String(getValues().inventoryStock.stock)
                     : undefined
                 }
                 keyboardType="numeric"
                 placeholder="Cantidad disponible"
                 placeholderTextColor="#777"
-                onChangeText={(text) => onChange(text)}
+                onChangeText={(text) => onChange(Number(text))}
                 editable={editableEntity}
               />
             </>
           )}
         />
-        {errors.inventoryProduct?.stock && (
+        {errors.inventoryStock?.stock && (
           <Text style={styles.errorMessage}>
-            {errors.inventoryProduct.stock.message}
+            {errors.inventoryStock.stock.message}
           </Text>
         )}
       </View>
@@ -160,13 +167,13 @@ export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
       <View style={styles.field}>
         <Controller
           control={control}
-          name="inventoryProduct.description"
+          name="description"
           render={({ field: { onChange } }) => (
             <>
               <Text style={styles.label}>Descripción</Text>
               <TextInput
                 style={[styles.input, styles.multiline]}
-                value={getValues().inventoryProduct.description}
+                value={getValues().description}
                 placeholder="Descripción del producto"
                 placeholderTextColor="#777"
                 onChangeText={(text) => onChange(text)}
@@ -179,46 +186,97 @@ export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.label}>Bodega</Text>
-        <Controller
-          control={control}
-          name="inventoryProduct.inventory"
-          render={({ field: { onChange } }) => (
-            <AppAccordion
-              title={
-                getValues().inventoryProduct.inventory !== undefined
-                  ? getValues().inventoryProduct.inventory!.name
-                  : 'Seleccionar inventario'
-              }
-              titleStyle={appAccordionStyles.buttonText}
-              buttonContainerStyle={appAccordionStyles.buttonContainer}
-              buttonStyle={appAccordionStyles.button}
-              disabled={!editableEntity}
-            >
-              {({ sendExpandedValue }) => (
-                <View style={appAccordionStyles.dropdown}>
-                  {inventories.map((inv, index) => (
-                    <Pressable
-                      key={index}
-                      style={appAccordionStyles.item}
-                      onPress={() => {
-                        onChange(inv);
-                        sendExpandedValue(false);
-                      }}
-                    >
-                      <Text style={appAccordionStyles.itemText}>
-                        {inv.name}
-                      </Text>
-                    </Pressable>
-                  ))}
+        <Text style={styles.label}>Inventario</Text>
+
+        <View style={styles.inventoryContainer}>
+          <Controller
+            control={control}
+            name="inventoryStock.inventory"
+            render={({ field: { onChange } }) =>
+              inventories.length === 0 ? (
+                <View style={styles.emptyInventoryState}>
+                  <Text style={styles.emptyInventoryText}>
+                    No hay inventarios disponibles
+                  </Text>
                 </View>
-              )}
-            </AppAccordion>
-          )}
-        />
-        {errors.inventoryProduct?.inventory && (
+              ) : !selectedInventory ? (
+                <FlatList
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.inventoryListContent}
+                  data={inventories}
+                  style={{ flexGrow: 0 }}
+                  keyExtractor={(c) => c.id}
+                  renderItem={({ item: inv }) => {
+                    return (
+                      <Pressable
+                        onPress={() => {
+                          onChange(inv);
+                          setSelectedInventory(true);
+                        }}
+                        style={({ pressed }) => [
+                          styles.inventoryCard,
+                          pressed && styles.inventoryCardPressed,
+                        ]}
+                      >
+                        <View style={styles.inventoryDot} />
+
+                        <Text
+                          numberOfLines={1}
+                          style={styles.inventoryCardText}
+                        >
+                          {inv.name}
+                        </Text>
+                      </Pressable>
+                    );
+                  }}
+                  onEndReached={() => {
+                    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+                  }}
+                  onEndReachedThreshold={0.5}
+                  ListFooterComponent={
+                    isFetchingNextPage ? (
+                      <ActivityIndicator
+                        size="small"
+                        style={styles.filterSpinner}
+                        color={theme.textPrimary}
+                      />
+                    ) : null
+                  }
+                />
+              ) : (
+                <Pressable
+                  onPress={() => {
+                    setSelectedInventory(false);
+                    onChange(undefined);
+                  }}
+                  style={({ pressed }) => [
+                    styles.selectedInventoryCard,
+                    pressed && styles.inventoryCardPressed,
+                  ]}
+                >
+                  <View style={styles.selectedInventoryBadge}>
+                    <Text style={styles.selectedInventoryBadgeText}>
+                      Seleccionado
+                    </Text>
+                  </View>
+
+                  <Text style={styles.selectedInventoryText}>
+                    {getValues().inventoryStock.inventory.name}
+                  </Text>
+
+                  <Text style={styles.changeInventoryText}>
+                    Toca para cambiar
+                  </Text>
+                </Pressable>
+              )
+            }
+          />
+        </View>
+
+        {errors.inventoryStock?.inventory && (
           <Text style={styles.errorMessage}>
-            {errors.inventoryProduct.inventory.message}
+            {errors.inventoryStock.inventory.message}
           </Text>
         )}
       </View>
@@ -227,12 +285,12 @@ export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
         <View style={styles.switchRow}>
           <Controller
             control={control}
-            name="inventoryProduct.isDiscontinued"
+            name="isDiscontinued"
             render={({ field: { onChange } }) => (
               <>
                 <Text style={styles.label}>Descontinuado</Text>
                 <Switch
-                  value={getValues().inventoryProduct.isDiscontinued}
+                  value={getValues().isDiscontinued}
                   onValueChange={(value) => onChange(value)}
                   disabled={!editableEntity}
                 />
@@ -244,24 +302,25 @@ export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
 
       <Controller
         control={control}
-        name="productCode"
+        name="codes"
         render={({ field: { onChange } }) => (
           <CardCarousel
-            data={getValues().productCode}
+            data={getValues().codes}
             renderItem={(item: ProductCode | null) => (
               <HandleCode
                 navigation={navigation}
                 code={item?.code}
                 handle={editableEntity}
                 handleChange={(code, codeType) => {
-                  if (getValues().productCode.length === 0) {
+                  if (getValues().codes.length === 0) {
                     onChange([
-                      ...getValues().productCode,
+                      ...getValues().codes,
                       {
                         id: uuid(),
                         code: code,
                         codeType: codeType,
                         isPrimary: true,
+                        createdAt: '',
                       } satisfies ProductCode,
                     ]);
                     return;
@@ -269,21 +328,22 @@ export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
                   if (item == null) return;
                   item.code = code;
                   item.codeType = codeType;
-                  onChange([...getValues().productCode]);
+                  onChange([...getValues().codes]);
                 }}
                 handleAdd={(code, codeType) => {
                   onChange([
-                    ...getValues().productCode,
+                    ...getValues().codes,
                     {
                       id: uuid(),
                       code: code,
                       codeType: codeType,
-                      isPrimary: getValues().productCode.length === 0,
+                      isPrimary: Boolean(getValues().codes.length === 0),
+                      createdAt: '',
                     } satisfies ProductCode,
                   ]);
                 }}
                 handleRemove={() => {
-                  const newProductCode = getValues().productCode.filter(
+                  const newProductCode = getValues().codes.filter(
                     (pc) => pc.id !== item?.id
                   );
                   if (newProductCode) onChange(newProductCode);
@@ -293,14 +353,14 @@ export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
           />
         )}
       />
-      {errors.productCode && (
-        <Text style={styles.errorMessage}>{errors.productCode.message}</Text>
+      {errors.codes && (
+        <Text style={styles.errorMessage}>{errors.codes.message}</Text>
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: AppTheme) => ({
   container: {
     paddingHorizontal: 16,
   },
@@ -324,14 +384,108 @@ const styles = StyleSheet.create({
   multiline: {
     height: 90,
     textAlignVertical: 'top',
-  },
+  } satisfies TextStyle,
   switchRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginVertical: 10,
-  },
+  } satisfies ViewStyle,
   errorMessage: {
     color: 'red',
+  } satisfies TextStyle,
+  filterSpinner: {
+    marginHorizontal: 12,
+    alignSelf: 'center',
+  } satisfies ViewStyle,
+  inventoryContainer: {
+    backgroundColor: theme.card,
+    borderWidth: 1,
+    borderColor: theme.border,
+    borderRadius: 18,
+    padding: 14,
+  },
+
+  inventoryListContent: {
+    paddingRight: 10,
+  },
+
+  inventoryCard: {
+    minWidth: 120,
+    maxWidth: 180,
+    marginRight: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    borderRadius: 16,
+    backgroundColor: theme.overlay,
+    borderWidth: 1,
+    borderColor: theme.border,
+    justifyContent: 'center',
+  } satisfies ViewStyle,
+
+  inventoryCardPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.98 }],
+  },
+
+  inventoryDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 999,
+    backgroundColor: theme.accent,
+    marginBottom: 10,
+  },
+
+  inventoryCardText: {
+    color: theme.textPrimary,
+    fontSize: 14,
+    fontWeight: '600',
+  } satisfies TextStyle,
+
+  selectedInventoryCard: {
+    backgroundColor: theme.accentSoft,
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.accent,
+  },
+
+  selectedInventoryBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: theme.accent,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginBottom: 12,
+  } satisfies ViewStyle,
+
+  selectedInventoryBadgeText: {
+    color: theme.textPrimary,
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  } satisfies TextStyle,
+
+  selectedInventoryText: {
+    color: theme.textPrimary,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 6,
+  } satisfies TextStyle,
+
+  changeInventoryText: {
+    color: theme.textSecondary,
+    fontSize: 13,
+  },
+
+  emptyInventoryState: {
+    paddingVertical: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  } satisfies ViewStyle,
+
+  emptyInventoryText: {
+    color: theme.textSecondary,
+    fontSize: 14,
   },
 });

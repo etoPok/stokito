@@ -29,6 +29,7 @@ export const ExtraFormProvider = ({
 
 export const useEntityForm = () => {
   const ctx = useContext(EntityFormContext);
-  if (!ctx) throw new Error('useEntityForm must be used inside provider');
+  if (!ctx)
+    throw new Error('useExtendedFormContext must be used inside provider');
   return ctx;
 };

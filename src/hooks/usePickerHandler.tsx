@@ -37,13 +37,10 @@ export function useScreenMode<T, S extends keyof RootStackParamList>({
     if (!isPickerMode) return;
 
     const unsubscribe = navigation.addListener('beforeRemove', () => {
-      // Se dispara SIEMPRE antes de salir: botón físico, swipe,
-      // popToTop, replace, reset — cualquier causa.
-      // No bloqueamos la navegación, solo limpiamos.
       cancelIfPending();
     });
 
-    return unsubscribe; // cleanup al desmontar el componente
+    return unsubscribe;
   }, [navigation, isPickerMode, cancelIfPending]);
 
   const handleItemPress = useCallback(

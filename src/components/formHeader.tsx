@@ -2,7 +2,7 @@ import { Alert } from 'react-native';
 import { RootStackParamList, ScreenNavigation } from '../types';
 import { Menu, IconButton } from 'react-native-paper';
 import { useState } from 'react';
-import { useEntityForm } from '../hooks/entityFormContext';
+import { useEntityForm } from '../hooks/useEntityForm';
 import { Header } from './header';
 import { AppTheme } from '../theme/themes';
 import { useStyles } from '../hooks/useStyles';

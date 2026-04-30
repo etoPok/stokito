@@ -12,6 +12,7 @@ class Database {
       Database.instance = new Database();
       Database.instance.db = await SQLite.openDatabaseAsync(databaseName);
       Database.instance.databaseName = databaseName;
+      // await Database.instance.resetDatabase();
       await Database.instance.createDatabase();
 
       console.log('Database created');
@@ -22,15 +23,16 @@ class Database {
 
   async createDatabase() {
     await Database.instance!.db!.execAsync(`
+      PRAGMA journal_mode = WAL;
       PRAGMA foreign_keys = ON;
 
-      CREATE TABLE IF NOT EXISTS product_definition (
+      CREATE TABLE IF NOT EXISTS product (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         description TEXT,
-        is_discontinued INTEGER DEFAULT 0,
         sale_price INTEGER NOT NULL,
         cost_price INTEGER NOT NULL,
+        is_discontinued INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -40,9 +42,10 @@ class Database {
         code TEXT NOT NULL,
         code_type TEXT NOT NULL,
         is_primary INTEGER NOT NULL CHECK(is_primary IN (0, 1)) DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTANP,
 
         UNIQUE(code),
-        FOREIGN KEY (product_id) REFERENCES product_definition(id) ON DELETE CASCADE
+        FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
       );
 
       CREATE TABLE IF NOT EXISTS inventory (
@@ -52,10 +55,10 @@ class Database {
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
 
-      CREATE TABLE IF NOT EXISTS inventory_product (
+      CREATE TABLE IF NOT EXISTS inventory_stock (
         id TEXT PRIMARY KEY,
-        inventory_id TEXT NOT NULL,
         product_id TEXT NOT NULL,
+        inventory_id TEXT NOT NULL,
         stock INTEGER NOT NULL DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
 
@@ -63,7 +66,7 @@ class Database {
           REFERENCES inventory(id) ON DELETE CASCADE,
 
         FOREIGN KEY (product_id)
-          REFERENCES product_definition(id) ON DELETE CASCADE,
+          REFERENCES product(id) ON DELETE CASCADE,
 
         UNIQUE (inventory_id, product_id)
       );
@@ -71,7 +74,8 @@ class Database {
       CREATE TABLE IF NOT EXISTS sale (
         id TEXT PRIMARY KEY,
         date TEXT DEFAULT CURRENT_TIMESTAMP,
-        total INTEGER NOT NULL
+        total INTEGER NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
 
       CREATE TABLE IF NOT EXISTS sale_detail (
@@ -81,7 +85,6 @@ class Database {
         sale_price INTEGER NOT NULL,
         quantity INTEGER NOT NULL,
         subtotal INTEGER NOT NULL,
-        is_voided INTEGER NOT NULL DEFAULT 0,
 
         FOREIGN KEY (sale_id)
           REFERENCES sale(id) ON DELETE CASCADE

@@ -8,7 +8,7 @@ import {
   SubmitErrorHandler,
 } from 'react-hook-form';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { EntityFormContext } from '../hooks/entityFormContext';
+import { EntityFormContext } from '../hooks/useEntityForm';
 
 export type FormFieldsProps = {
   editable: boolean;
