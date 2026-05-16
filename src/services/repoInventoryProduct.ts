@@ -172,10 +172,15 @@ export async function deleteInventoryProduct(id: string): Promise<boolean> {
   return changes === 1;
 }
 
+/**
+ * Update the inventory product
+ *
+ * @returns Changes including IDs of created records. Use these changes to overwrite the local object.
+ */
 export async function updateInventoryProduct(
   id: string,
   changes: Partial<CreateInventoryProductInput>
-): Promise<void> {
+): Promise<InventoryProduct> {
   try {
     const inventoryStock = await stokitoDB.getInventoryStock(id);
     if (inventoryStock === null || inventoryStock.product_id == null) {
@@ -183,25 +188,42 @@ export async function updateInventoryProduct(
     }
     const productId = inventoryStock.product_id;
 
+    const codes: ProductCode[] = (
+      (await stokitoDB.getCodesByProduct(productId)) ?? []
+    ).map(
+      (c) =>
+        ({
+          id: c.id,
+          code: c.code,
+          codeType: c.code_type,
+          isPrimary: Boolean(c.is_primary),
+          createdAt: c.created_at,
+        }) satisfies ProductCode
+    );
+
     if (changes.codes) {
-      const pcs = await stokitoDB.getCodesByProduct(productId);
       const date = new Date().toISOString();
 
       for (const pc of changes.codes) {
-        const existingProductCode = pcs.find((v) => v.id === pc.id);
+        const existingProductCode = codes.find((c) => c.id === pc.id);
+
         if (existingProductCode) {
           await stokitoDB.updateProductCode(pc.id, pc.code, pc.codeType);
-        } else {
-          await stokitoDB.createProductCode(
-            uuid(),
-            id,
-            pc.code,
-            pc.codeType,
-            pc.isPrimary,
-            date
-          );
+          continue;
         }
+
+        pc.id = uuid();
+        await stokitoDB.createProductCode(
+          pc.id,
+          productId,
+          pc.code,
+          pc.codeType,
+          pc.isPrimary,
+          date
+        );
       }
+
+      changes.codes = codes;
     }
 
     await stokitoDB.updateProduct(
@@ -218,8 +240,38 @@ export async function updateInventoryProduct(
       changes.inventoryId,
       changes.stock
     );
-  } catch (error) {
-    console.log(error);
+
+    const product = await stokitoDB.getProduct(productId);
+    const updatedInventoryStock = await stokitoDB.getInventoryStock(id);
+    const inventory = await stokitoDB.getInventory(
+      updatedInventoryStock.inventory_id
+    );
+
+    return {
+      id: updatedInventoryStock.id,
+      productId: product.id,
+      name: product.name,
+      description: product.description,
+      salePrice: product.sale_price,
+      costPrice: product.cost_price,
+      isDiscontinued: Boolean(product.is_discontinued),
+      inventoryStock: {
+        id: updatedInventoryStock.id,
+        stock: updatedInventoryStock.stock,
+        inventory: {
+          id: inventory.id,
+          name: inventory.name,
+          location: inventory.location,
+          createdAt: inventory.created_at,
+        },
+        createdAt: updatedInventoryStock.created_at,
+      },
+      codes,
+      createdAt: product.created_at,
+    };
+  } catch (err) {
+    console.log(err);
+    throw err;
   }
 }
 

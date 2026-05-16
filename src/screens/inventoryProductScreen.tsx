@@ -64,9 +64,7 @@ export function InventoryProductScreen() {
         }
       }}
       handleEntityUpdate={async (values, route) => {
-        const alreadyInInventory: boolean = await isProductInInventory(
-          values.productId
-        );
+        const alreadyInInventory = await isProductInInventory(values.productId);
 
         try {
           let inventoryStockId = values.id;

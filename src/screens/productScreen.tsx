@@ -35,7 +35,7 @@ export function ProductScreen() {
             costPrice: values.costPrice,
             description: values.description,
             isDiscontinued: values.isDiscontinued,
-            productCodes: values.codes,
+            codes: values.codes,
           });
         } catch (error) {
           console.log(error);
@@ -50,7 +50,7 @@ export function ProductScreen() {
               salePrice: values.salePrice,
               costPrice: values.costPrice,
               isDiscontinued: values.isDiscontinued,
-              productCodes: values.codes,
+              codes: values.codes,
             },
           });
         } catch (error) {

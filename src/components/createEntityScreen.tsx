@@ -76,7 +76,6 @@ export function CreateEntityScreen<
   };
 
   const onInvalid = (errors: any) => {
-    console.log(errors);
     Alert.alert('Datos inválidos', 'Existen campos sin llenar');
   };
 

@@ -54,8 +54,10 @@ export async function deleteInventory(id: string): Promise<boolean> {
 export async function updateInventory(
   id: string,
   changes: Partial<CreateInventoryInput>
-): Promise<void> {
+): Promise<Inventory> {
   const inventory = await stokitoDB.getInventory(id);
   if (inventory === null) throw new Error(`Inventory ${id} not found`);
   await stokitoDB.updateInventory(id, changes.name, changes.location);
+  const updatedInventory = await stokitoDB.getInventory(id);
+  return assembleInventory(updatedInventory);
 }

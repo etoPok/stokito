@@ -13,7 +13,7 @@ interface EntityQueryKeys {
 
 interface PaginatedRepo<T, TCreate> {
   getPage: (
-    cursor: number | null,
+    cursor: number,
     limit: number
   ) => Promise<{
     items: T[];
@@ -21,7 +21,7 @@ interface PaginatedRepo<T, TCreate> {
   }>;
   create: (input: TCreate) => Promise<T>;
   remove: (id: string) => Promise<boolean>;
-  update: (id: string, changes: Partial<TCreate>) => Promise<void>;
+  update: (id: string, changes: Partial<TCreate>) => Promise<T>;
 }
 
 const PAGE_SIZE = 20;
@@ -119,7 +119,7 @@ export function createPaginatedHooks<T extends { id: string }, TCreate>(
         id: string;
         changes: Partial<TCreate>;
       }) => repo.update(id, changes),
-      onSuccess: (_result, { id, changes }) => {
+      onSuccess: (_result, { id }) => {
         queryClient.setQueryData(
           keys.pages(),
           (
@@ -133,7 +133,7 @@ export function createPaginatedHooks<T extends { id: string }, TCreate>(
               pages: old.pages.map((page) => ({
                 ...page,
                 items: page.items.map((item) =>
-                  item.id === id ? { ...item, ...changes } : item
+                  item.id === id ? { ...item, ..._result } : item
                 ),
               })),
             };

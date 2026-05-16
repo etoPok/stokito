@@ -12,7 +12,6 @@ class Database {
       Database.instance = new Database();
       Database.instance.db = await SQLite.openDatabaseAsync(databaseName);
       Database.instance.databaseName = databaseName;
-      // await Database.instance.resetDatabase();
       await Database.instance.createDatabase();
 
       console.log('Database created');

@@ -7,7 +7,7 @@ export type CreateProductInput = {
   name: string;
   salePrice: number;
   costPrice: number;
-  productCodes: ProductCode[];
+  codes: ProductCode[];
   isDiscontinued: boolean;
   description?: string;
 };
@@ -37,7 +37,7 @@ export async function createProduct({
   name,
   salePrice,
   costPrice,
-  productCodes,
+  codes,
   isDiscontinued,
   description,
 }: CreateProductInput): Promise<Product> {
@@ -54,25 +54,17 @@ export async function createProduct({
     description
   );
 
-  const codes: ProductCode[] = [];
   try {
-    for (const pc of productCodes) {
-      const productCodeId = uuid();
+    for (const pc of codes) {
+      pc.id = uuid();
       await stokitoDB.createProductCode(
-        productCodeId,
+        pc.id,
         productId,
         pc.code,
         pc.codeType,
         pc.isPrimary,
         date
       );
-      codes.push({
-        id: productCodeId,
-        code: pc.code,
-        codeType: pc.codeType,
-        isPrimary: pc.isPrimary,
-        createdAt: date,
-      });
     }
   } catch (error) {
     await stokitoDB.deleteProduct(productId);
@@ -113,30 +105,58 @@ export async function deleteProduct(id: string): Promise<boolean> {
   return changes === 1;
 }
 
+/**
+ * Update the product
+ *
+ * @returns Changes including IDs of created records. Use these changes to overwrite the local object.
+ */
 export async function updateProduct(
   id: string,
-  changes: Partial<Product>
-): Promise<void> {
+  changes: Partial<CreateProductInput>
+): Promise<Product> {
   try {
-    if (changes.codes) {
-      const pcs = await stokitoDB.getCodesByProduct(id);
-      const date = new Date().toISOString();
+    const codes: ProductCode[] = (
+      (await stokitoDB.getCodesByProduct(id)) ?? []
+    ).map(
+      (c) =>
+        ({
+          id: c.id,
+          code: c.code,
+          codeType: c.code_type,
+          isPrimary: Boolean(c.is_primary),
+          createdAt: c.created_at,
+        }) satisfies ProductCode
+    );
 
+    if (changes.codes) {
+      const codeDate = new Date().toISOString();
       for (const pc of changes.codes) {
-        const existingProductCode = pcs.find((value) => value.id === pc.id);
+        const existingProductCode = codes.find((value) => value.id === pc.id);
+
         if (existingProductCode) {
           await stokitoDB.updateProductCode(pc.id, pc.code, pc.codeType);
-        } else {
-          await stokitoDB.createProductCode(
-            uuid(),
-            id,
-            pc.code,
-            pc.codeType,
-            pc.isPrimary,
-            date
-          );
+          continue;
         }
+
+        pc.id = uuid();
+        await stokitoDB.createProductCode(
+          pc.id,
+          id,
+          pc.code,
+          pc.codeType,
+          pc.isPrimary,
+          codeDate
+        );
+        codes.push({
+          id: pc.id,
+          code: pc.code,
+          codeType: pc.codeType,
+          isPrimary: pc.isPrimary,
+          createdAt: pc.createdAt,
+        });
       }
+
+      changes.codes = codes;
     }
 
     await stokitoDB.updateProduct(
@@ -147,7 +167,20 @@ export async function updateProduct(
       changes.description,
       changes.isDiscontinued
     );
-  } catch (error) {
-    console.log(error);
+
+    const product = await stokitoDB.getProduct(id);
+    return {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      salePrice: product.sale_price,
+      costPrice: product.cost_price,
+      isDiscontinued: Boolean(product.is_discontinued),
+      createdAt: product.created_at,
+      codes,
+    };
+  } catch (err) {
+    console.log(err);
+    throw err;
   }
 }

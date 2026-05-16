@@ -186,7 +186,7 @@ export function ProductFormFields({ isNew }: FormFieldsProps) {
                       id: uuid(),
                       code: code,
                       codeType: codeType,
-                      isPrimary: getValues().codes.length === 0,
+                      isPrimary: Boolean(getValues().codes.length === 0),
                       createdAt: '',
                     } satisfies ProductCode,
                   ]);

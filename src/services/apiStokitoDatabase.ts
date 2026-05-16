@@ -222,7 +222,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     const query = `
       UPDATE product
       SET ${fields.join(', ')}
-      WHERE id = ?
+      WHERE id = ?;
     `;
 
     const result = await db.runAsync(query, values);
@@ -338,7 +338,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     const query = `
       UPDATE inventory
       SET ${fields.join(', ')}
-      WHERE id = ?
+      WHERE id = ?;
     `;
 
     const result = await db.runAsync(query, values);
@@ -487,7 +487,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     const query = `
       UPDATE inventory_stock
       SET ${fields.join(', ')}
-      WHERE id = ?
+      WHERE id = ?;
     `;
 
     const result = await db.runAsync(query, values);
@@ -621,7 +621,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     const query = `
       UPDATE product_code
       SET ${fields.join(', ')}
-      WHERE id = ?
+      WHERE id = ?;
     `;
 
     const result = await db.runAsync(query, values);
@@ -672,8 +672,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
     const rows = await db.getAllAsync(
       `
       SELECT * FROM product_code
-      WHERE product_id = ?
-      ORDER BY is_primary;
+      WHERE product_id = ?;
     `,
       [productId]
     );
@@ -689,8 +688,7 @@ class ApiStokitoDatabase implements StokitoDatabase {
       `
       SELECT *
       FROM product_code
-      WHERE product_id IN (${placeholders})
-      ORDER BY is_primary DESC;
+      WHERE product_id IN (${placeholders});
     `,
       productIds
     );

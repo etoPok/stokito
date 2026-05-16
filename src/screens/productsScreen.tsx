@@ -324,13 +324,22 @@ export function ProductsScreen() {
             <CardButton
               title={item.name}
               imageSource={require('../assets/favicon.png')}
-              onPress={() =>
-                isViewMode
-                  ? navigation.navigate('ProductScreen', {
-                      product: item as Product,
-                    })
-                  : handleItemPress(item as Product)
-              }
+              onPress={() => {
+                if (!isViewMode) {
+                  handleItemPress(item as Product);
+                  return;
+                }
+
+                if (activeFilter.kind === 'inventory') {
+                  navigation.navigate('InventoryProductScreen', {
+                    inventoryProduct: item as InventoryProduct,
+                  });
+                } else {
+                  navigation.navigate('ProductScreen', {
+                    product: item as Product,
+                  });
+                }
+              }}
             />
           );
         }}

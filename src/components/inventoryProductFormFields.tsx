@@ -53,7 +53,9 @@ export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
   const inventories: Inventory[] =
     inventoryData?.pages.flatMap((p) => p.items) ?? [];
 
-  const [selectedInventory, setSelectedInventory] = useState<boolean>(false);
+  const [selectedInventory, setSelectedInventory] = useState<boolean>(
+    getValues().inventoryStock?.inventory?.name.trim() !== ''
+  );
 
   return (
     <View style={styles.container}>
@@ -247,6 +249,7 @@ export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
               ) : (
                 <Pressable
                   onPress={() => {
+                    if (!editableEntity) return;
                     setSelectedInventory(false);
                     onChange(undefined);
                   }}
@@ -273,7 +276,6 @@ export function InventoryProductFormFields({ isNew }: FormFieldsProps) {
             }
           />
         </View>
-
         {errors.inventoryStock?.inventory && (
           <Text style={styles.errorMessage}>
             {errors.inventoryStock.inventory.message}
